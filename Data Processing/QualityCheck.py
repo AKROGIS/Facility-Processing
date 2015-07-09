@@ -1,7 +1,5 @@
 import constants_sde as constants
 
-import os.path
-import numpy
 import arcpy
 import arcpy.da
 
@@ -114,38 +112,38 @@ def find_bldg_without_polys(poly_type):
 ok_dups_by_type = None
 
 
-def well_known_dups(type):
+def well_known_dups(item_type):
     global ok_dups_by_type
     if not ok_dups_by_type:
         ok_dups_by_type = {}
         with arcpy.da.SearchCursor(constants.allowable_dups,
                                    ["Type", "ID"]) as cursor:
             for row in cursor:
-                if not ok_dups_by_type.has_key(row[0]):
+                if row[0] not in ok_dups_by_type:
                     ok_dups_by_type[row[0]] = set()
                 ok_dups_by_type[row[0]].add(row[1])
 
-    if ok_dups_by_type.has_key(type):
-        return ok_dups_by_type[type]
+    if item_type in ok_dups_by_type:
+        return ok_dups_by_type[item_type]
     return set()
 
 
 ok_link_issues_by_type = None
 
 
-def well_known_link_issues(type):
+def well_known_link_issues(item_type):
     global ok_link_issues_by_type
     if not ok_link_issues_by_type:
         ok_link_issues_by_type = {}
         with arcpy.da.SearchCursor(constants.accepted_link_issues,
                                    ["Type", "ID"]) as cursor:
             for row in cursor:
-                if not ok_link_issues_by_type.has_key(row[0]):
+                if row[0] not in ok_link_issues_by_type:
                     ok_link_issues_by_type[row[0]] = set()
                 ok_link_issues_by_type[row[0]].add(row[1])
 
-    if ok_link_issues_by_type.has_key(type):
-        return ok_link_issues_by_type[type]
+    if item_type in ok_link_issues_by_type:
+        return ok_link_issues_by_type[item_type]
     return set()
 
 
@@ -241,7 +239,7 @@ def links_without_lcs():
     return links
 
 
-def myStr(s):
+def my_str(s):
     if s:
         return str(s)
     else:
@@ -273,7 +271,7 @@ def bldgs_without_fmss():
                 detail = ['', is_extant, '', i]
                 # there should always be one and only one row, but this is safest
                 for row in cursor1:
-                    strings = [myStr(x) for x in row]
+                    strings = [my_str(x) for x in row]
                     detail = [strings[0], is_extant, strings[1], i]
                 details.append(detail)
         details.sort()
@@ -292,13 +290,10 @@ def fmss_without_link():
         details = []
         for i in items:
             where1 = "Location = '" + i + "'"
-            with arcpy.da.SearchCursor(table1,
-                                       ['Park', 'Status', 'Description',
-                                        'BLDGTYPE', ], where1) as cursor:
-                detail = ['', '', '', i, '']
+            with arcpy.da.SearchCursor(table1, ['Park', 'Status', 'Description', 'BLDGTYPE'], where1) as cursor:
                 # there should always be one and only one row, but this is safest
                 for row in cursor:
-                    strings = [myStr(x) for x in row]
+                    strings = [my_str(x) for x in row]
                     detail = strings[:3] + [i] + strings[-1:]
                     details.append(detail)
         details.sort()
@@ -316,7 +311,7 @@ def points_without_bldg():
                               constants.bldg_pk_name)
 
 
-def bldgs_with_GPS_problems():
+def bldgs_with_gps_problems():
     bldgs = find_bldg_without_polys(constants.poly_types['Perimeter'])
     entrances = find_bldg_without_points(constants.point_types['Entrance'])
     if bldgs or entrances:
@@ -347,8 +342,8 @@ operations = [
      "Building_ID", None),
     ("Duplicate Building Ids in Building Points with the Center Subtype",
      find_dup_centers, "Building_ID", None),
-    # ("Duplicate Building Ids in Building Points with the Entrance Subtype", find_dup_entrances, "Building_ID", None),
-    # ("Duplicate Building Ids in Building Polygons with the Perimeter Subtype", find_dup_perimeters, "Building_ID", None),
+    # ("Duplicate Building Ids in Building Entrance Points", find_dup_entrances, "Building_ID", None),
+    # ("Duplicate Building Ids in Building Perimeter Polygons", find_dup_perimeters, "Building_ID", None),
     # ("Duplicate Building Ids in the Building Links Table", find_dup_bldg_links, "Building_ID", None),
     # ("Duplicate Geometry Ids in the Point Feature Class", find_dup_point_geom_id, "Geometry_ID", None),
     # ("Duplicate Geometry Ids in the Polygon Feature Class", find_dup_poly_geom_id, "Geometry_ID", None),
@@ -357,9 +352,9 @@ operations = [
     # ("Duplicate Park Ids in the Building Links Table", find_dup_park_id, "Park_ID", None),
 
     # ("Buildings without a Center (in point feature class)", bldgs_without_center, "Building_ID", None),
-    ##("Buildings without an Entrance (in point feature class)", bldgs_without_entrance, "Building_ID", None),
-    ##("Buildings without a Perimeter (in polygon feature class)", bldgs_without_perim, "Building_ID", None),
-    ##("Buildings without a Record in the Links Table", bldgs_without_link, "Building_ID", None),
+    # # ("Buildings without an Entrance (in point feature class)", bldgs_without_entrance, "Building_ID", None),
+    # # ("Buildings without a Perimeter (in polygon feature class)", bldgs_without_perim, "Building_ID", None),
+    # # ("Buildings without a Record in the Links Table", bldgs_without_link, "Building_ID", None),
     # ("Building Links with an Building ID not in the Buildings Table", links_without_bldg, "Building_ID", None),
     # ("Building Links with an FMSS ID not in the FMSS Table", links_without_fmss, "Building_ID", None),
     # ("Building Links with an LCS ID not in the LCS Table", links_without_lcs, "Building_ID", None),
@@ -370,31 +365,32 @@ operations = [
      ['Park', 'Status', 'Description', 'ID', 'Type'], constants.no_gis_export),
     # ("Building Polygons without a Building Record", polys_without_bldg, "Building_ID", None),
     # ("Building Points without a Building Record", points_without_bldg, "Building_ID", None),
-    # ("Buildings with GPS Issues", bldgs_with_GPS_problems, ['Park','Status','Description','ID','Type'], constants.gps_export)
+    # ("Buildings with GPS Issues", bldgs_with_gps_problems, ['Park','Status','Description','ID','Type'],
+    #   constants.gps_export)
     # ("Buildings with Photo Issues", ??, ['Park','Status','Description','ID','Type'], None)
     # ("Photo without buildings", ??, ['Park','Status','Description','ID','Type'], None)
 ]
 
 
 def main():
-    for title, func, item_names, file in operations:
+    for title, func, item_names, filename in operations:
         print_heading(title)
         if isinstance(item_names, str):
             item_names = item_names.split(',')
         issues = func()
         if issues:
-            if file:
+            if filename:
                 import csv
 
-                with open(file, 'wb') as csvfile:
+                with open(filename, 'wb') as csvfile:
                     csv.writer(csvfile).writerows([item_names] + issues)
-                print '  ** Problems!, see {}'.format(file)
+                print '  ** Problems!, see {}'.format(filename)
             else:
                 print_issues(issues, item_names)
         else:
             print '  Nothing found! All is well!!'
-            if file:
-                open(file, 'wb').close()
+            if filename:
+                open(filename, 'wb').close()
 
 
 if __name__ == '__main__':

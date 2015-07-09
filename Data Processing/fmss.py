@@ -1,10 +1,11 @@
 import urllib2
 import json
 
-location_url = 'http://inpniscvnpunit2/fmss/api/locations?siteid={0}&page={1}'  # returns JSON
-asset_url = 'http://inpniscvnpunit2/fmss/api/assets?siteid={0}&page={1}'  # returns JSON
+# These URLs return JSON
+location_url = 'http://inpniscvnpunit2/fmss/api/locations?siteid={0}&page={1}'
+asset_url = 'http://inpniscvnpunit2/fmss/api/assets?siteid={0}&page={1}'
 
-# Response is JSON, converted to Python it looks like:
+# Response is JSON, converted to Python it looks like (as of July 20115):
 response = {u'TotalItems': 2,
             u'TotalPages': 1,
             u'PagedList': ['item1', 'item2', '...'],
@@ -49,7 +50,7 @@ location_fields = {'LO2': 'Asset Code',
                    'LO11': 'Unit of Measure',
                    # No Unit of Measure QTY
                    # No Aquisition Date
-                   'LO14': 'unkown',  # empty on all records
+                   'LO14': 'unknown',  # empty on all records
                    'LOCOPER.FL03': 'Optimizer Band'}  # usually blank, occassionally "{UNITCODE}001"
 
 # The Status.maxvalue does not vary for a given status.value
@@ -113,17 +114,11 @@ assetCodes = {0000: 'Site',
               7900: 'Amphitheater'}
 
 
-def myStr(s):
+def my_str(s):
     if s:
         return str(s)
     else:
         return ''
-
-# loc_header = ['Park','Asset_Code','Location','Description','Status','StatusMax','Organization','Parent_Organization','Parent_Location',
-#              'API','CRV','FCI','DM','Unit_of_Measure','unk','Optimizer_Band','LocationsId']
-loc_header = ['Park', 'Asset_Code', 'Location', 'Description', 'Status',
-              'Parent_Location',
-              'API', 'CRV', 'FCI', 'DM', 'Unit_of_Measure']
 
 
 def locations(park):
@@ -142,7 +137,7 @@ def locations_page(park, page):
     except urllib2.HTTPError:
         print "Unable to retrieve Location page {0} for {1}.".format(page,
                                                                      park)
-        return (False, [])
+        return False, []
 
     data = json.load(f)
     # print data
@@ -150,77 +145,72 @@ def locations_page(park, page):
     current_page = data['Page']  # will always be 1 or greater
     done = current_page >= total_pages
     data = location_data(data['PagedList'], park)
-    return (done, data)
+    return done, data
 
 
-def location_data(data, park):
-    locations = []
-    for page in data:
+def location_data(page, park):
+    data = []
+    for item in page:
         try:
-            parentOrg = page['LOCHIERARCHY']['ORGID']
-        except:
-            parentOrg = None
+            parent_org = item['LOCHIERARCHY']['ORGID']
+        except KeyError:
+            parent_org = None
         try:
-            parentLoc = page['LOCHIERARCHY']['PARENT']
-        except:
-            parentLoc = None
+            parent_location = item['LOCHIERARCHY']['PARENT']
+        except KeyError:
+            parent_location = None
         try:
-            opt = page['LOCOPER']['FL03']
-        except:
+            opt = item['LOCOPER']['FL03']
+        except KeyError:
             opt = None
-        values = [park, page['LO2'], page['LOCATION'], page['DESCRIPTION'],
-                  page['STATUS']['Value'],
-                  #                  page['STATUS']['maxvalue'],page['ORGID'],parentOrg,parentLoc,
-                  #                  page['LO5'],page['LO6'],page['LO7'],page['LO9'],page['LO11'],page['LO14'],opt,page['LOCATIONSID']]
-                  parentLoc, page['LO5'], page['LO6'], page['LO7'],
-                  page['LO9'], page['LO11']]
-        locations.append(values)
-    return locations
+        values = [park, item['LO2'], item['LOCATION'], item['DESCRIPTION'], item['STATUS']['Value'],
+                  parent_location, item['LO5'], item['LO6'], item['LO7'], item['LO9'], item['LO11'],
+                  item['STATUS']['maxvalue'], item['ORGID'], parent_org,
+                  item['LO14'], opt, item['LOCATIONSID']
+                  ]
+        data.append(values)
+    return data
 
 
-def lshowone(park, file=None):
-    if file:
+loc_header = ['Park', 'Asset_Code', 'Location', 'Description', 'Status',
+              'Parent_Location', 'API', 'CRV', 'FCI', 'DM', 'Unit_of_Measure',
+              'StatusMax', 'Organization', 'Parent_Organization',
+              'Unknown', 'Optimizer_Band', 'LocationsId'
+              ]
+
+
+def lshowone(park, filename=None):
+    if filename:
         import csv
 
-        with open(file, 'wb') as csvfile:
+        with open(filename, 'wb') as csvfile:
             cf = csv.writer(csvfile)
             cf.writerow(loc_header)
             for item in locations(park):
-                item = [
-                    s.encode("utf-8") if isinstance(s, (str, unicode)) else s
-                    for s in item]
+                item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                 cf.writerow(item)
     else:
         print ",".join(loc_header)
         for item in locations(park):
-            print ",".join([myStr(x) for x in item])
+            print ",".join([my_str(x) for x in item])
 
 
-def lshowall(file=None):
-    if file:
+def lshowall(filename=None):
+    if filename:
         import csv
 
-        with open(file, 'wb') as csvfile:
+        with open(filename, 'wb') as csvfile:
             cf = csv.writer(csvfile)
             cf.writerow(loc_header)
             for park in sites:
                 for item in locations(park):
-                    item = [s.encode("utf-8") if isinstance(s, (
-                    str, unicode)) else s for s in item]
+                    item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                     cf.writerow(item)
     else:
         print ",".join(loc_header)
         for park in sites:
             for item in locations(park):
-                print ",".join([myStr(x) for x in item])
-
-
-asset_header = ['Park', 'Asset_Type', 'Asset_Code', 'Asset_ID', 'Asset_UID',
-                'Asset_Num', 'Location', 'Description',
-                'unk19', 'unk20', 'unk21', 'unk5', 'unk6', 'Quantity',
-                'Unit_of_Measure', 'Expiration_Date'
-                                   'Install_Date', 'Replacement_Cost',
-                'Organization']
+                print ",".join([my_str(x) for x in item])
 
 
 def assets(park):
@@ -238,7 +228,7 @@ def assets_page(park, page):
         f = urllib2.urlopen(asset_url.format(sites[park], page))
     except urllib2.HTTPError:
         print "Unable to retrieve Asset page {0} for {1}.".format(page, park)
-        return (False, [])
+        return False, []
 
     data = json.load(f)
     f.close()
@@ -248,69 +238,70 @@ def assets_page(park, page):
     print park, current_page, total_pages
     done = current_page >= total_pages
     data = asset_data(data['PagedList'], park)
-    return (done, data)
+    return done, data
 
 
-def asset_data(data, park):
-    assets = []
-    for page in data:
+def asset_data(page, park):
+    data = []
+    for page in page:
         try:
-            parentOrg = page['LOCHIERARCHY']['ORGID']
-        except:
-            parentOrg = None
+            parent_org = page['LOCHIERARCHY']['ORGID']
+        except KeyError:
+            parent_org = None
         try:
-            parentLoc = page['LOCHIERARCHY']['PARENT']
-        except:
-            parentLoc = None
+            parent_location = page['LOCHIERARCHY']['PARENT']
+        except KeyError:
+            parent_location = None
         try:
             opt = page['LOCOPER']['FL03']
-        except:
+        except KeyError:
             opt = None
-        values = [park, page['ASSETTYPE'], page['EQ4'], page['ASSETID'],
-                  page['ASSETNUM'], page['ASSETUID'], page['LOCATION'],
-                  page['DESCRIPTION'],
-                  page['EQ19'], page['EQ20'], page['EQ21'], page['EQ5'],
-                  page['EQ6'], page['EQ7'], page['EQ8'], page['EQ9'],
-                  page['INSTALLDATE'], page['REPLACECOST'], page['ORGID']]
-        assets.append(values)
-    return assets
+        values = [park, page['ASSETTYPE'], page['EQ4'], page['ASSETID'], page['ASSETNUM'], page['ASSETUID'],
+                  page['LOCATION'], page['DESCRIPTION'], page['EQ19'], page['EQ20'], page['EQ21'], page['EQ5'],
+                  page['EQ6'], page['EQ7'], page['EQ8'], page['EQ9'], page['INSTALLDATE'], page['REPLACECOST'],
+                  page['ORGID'], parent_org, parent_location, opt]
+        data.append(values)
+    return data
 
 
-def ashowone(park, file=None):
-    if file:
+asset_header = ['Park', 'Asset_Type', 'Asset_Code', 'Asset_ID', 'Asset_UID', 'Asset_Num',
+                'Location', 'Description', 'unk19', 'unk20', 'unk21', 'unk5',
+                'unk6', 'Quantity', 'Unit_of_Measure', 'Expiration_Date', 'Install_Date', 'Replacement_Cost',
+                'Organization', 'Parent_Org', 'Parent_Loc', 'Opt']
+
+
+def ashowone(park, filename=None):
+    if filename:
         import csv
 
-        with open(file, 'wb') as csvfile:
+        with open(filename, 'wb') as csvfile:
             cf = csv.writer(csvfile)
             cf.writerow(asset_header)
             for item in assets(park):
-                item = [
-                    s.encode("utf-8") if isinstance(s, (str, unicode)) else s
-                    for s in item]
+                item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                 cf.writerow(item)
     else:
         print ",".join(asset_header)
         for item in assets(park):
-            print ",".join([myStr(x) for x in item])
+            print ",".join([my_str(x) for x in item])
 
 
-def ashowall(file=None):
-    if file:
+def ashowall(filename=None):
+    if filename:
         import csv
 
-        with open(file, 'wb') as csvfile:
+        with open(filename, 'wb') as csvfile:
             cf = csv.writer(csvfile)
             cf.writerow(asset_header)
             for park in sites:
                 for item in assets(park):
-                    item = [s.encode("utf-8") if isinstance(s, (
-                    str, unicode)) else s for s in item]
+                    item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                     cf.writerow(item)
     else:
         print ",".join(asset_header)
         for park in sites:
             for item in assets(park):
-                print ",".join([myStr(x) for x in item])
+                print ",".join([my_str(x) for x in item])
 
 # lshowall('fmss.csv')
 # lshowone('AKRO')

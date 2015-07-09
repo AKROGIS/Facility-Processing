@@ -14,10 +14,8 @@ bldg_table = os.path.join(gdb, "akr_facility.GIS.Building")
 link_table = os.path.join(gdb, "akr_facility.GIS.Building_Link")
 point_fc = os.path.join(gdb, "akr_facility.GIS.Building_Point")
 poly_fc = os.path.join(gdb, "akr_facility.GIS.Building_Polygon")
-allowable_dups = os.path.join(gdb,
-                              "akr_facility.GIS.Building_QC_Well_Known_Duplicates")
-accepted_link_issues = os.path.join(gdb,
-                                    "akr_facility.GIS.Building_QC_Accepted_Link_Issues")
+allowable_dups = os.path.join(gdb, "akr_facility.GIS.Building_QC_Well_Known_Duplicates")
+accepted_link_issues = os.path.join(gdb, "akr_facility.GIS.Building_QC_Accepted_Link_Issues")
 
 fmss_table = os.path.join(gdb, "akr_facility.GIS.FMSSExport")
 lcs_table = os.path.join(gdb, "akr_facility.GIS.LCSExport")
