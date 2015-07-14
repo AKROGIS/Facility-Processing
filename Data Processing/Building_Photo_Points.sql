@@ -1,14 +1,15 @@
 USE [akr_facility]
 GO
 
-/****** Object:  View [gis].[Building_Photo_Points]    Script Date: 7/9/2015 6:17:17 PM ******/
+/****** Object:  View [gis].[Building_Photo_Points]    Script Date: 7/14/2015 2:39:16 PM ******/
 SET ANSI_NULLS ON
 GO
 
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE VIEW [gis].[Building_Photo_Points] AS SELECT P.OBJECTID
+
+ALTER VIEW [gis].[Building_Photo_Points] AS SELECT P.OBJECTID
            ,P.[Unit]
 		   ,P.[Filename]
 		   ,P.PhotoDate
@@ -20,15 +21,16 @@ CREATE VIEW [gis].[Building_Photo_Points] AS SELECT P.OBJECTID
 		   ,B.[Is_Sensitive]
 		   ,B.Building_ID
 		   ,B.[SHAPE]
-	  FROM [akr_facility].[gis].[PHOTOS] AS P
-	  JOIN [akr_facility].[gis].[BUILDING_LINK] AS L
+	  FROM [akr_facility].[gis].[Photos_evw] AS P
+	  JOIN [akr_facility].[gis].[Building_Link_evw] AS L
 	    ON P.Location_Id = L.FMSS_ID
-	  JOIN [akr_facility].[gis].[BUILDING_POINT] AS B
+	  JOIN [akr_facility].[gis].[Building_Point_evw] AS B
 	    ON L.Building_ID = B.Building_ID
-	  JOIN [akr_facility].[gis].[BUILDING] AS D
+	  JOIN [akr_facility].[gis].[Building_evw] AS D
 	    ON L.Building_ID = D.Building_ID
 	 WHERE B.Point_Type = 0
 	   AND (P.Asset_Code = '4300' OR P.Asset_Code = '4100')
+
 GO
 
 
