@@ -33,17 +33,17 @@ def get_connection_or_die():
 def make_table(connection):
     sql = ("IF NOT (EXISTS (SELECT * "
            "FROM INFORMATION_SCHEMA.TABLES "
-           "WHERE TABLE_NAME = 'Photos_in_filesystem'))"
+           "WHERE TABLE_NAME = 'Photos_In_Filesystem'))"
            "BEGIN"
-           "  CREATE TABLE [Photos_in_filesystem] "
-           "  (folder nvarchar(max), [file] nvarchar(max), lat float, lon float, bytes int, "
-           "  gpsdate datetime2, exifdate datetime2, filedate datetime2)"
+           "  CREATE TABLE [Photos_In_Filesystem] "
+           "  (Folder nvarchar(max), Filename nvarchar(max), Lat float, Lon float, Bytes int, "
+           "  Gpsdate datetime2, Exifdate datetime2, Filedate datetime2)"
            "END")
     return execute_sql(connection, sql)
 
 
 def clear_table(connection):
-    sql = "DELETE FROM [Photos_in_filesystem] "
+    sql = "DELETE FROM [Photos_In_Filesystem] "
     return execute_sql(connection, sql)
 
 
@@ -63,12 +63,12 @@ def write_photos(connection, photos):
         for photo in photos:
             if len(photo) == 2:
                 # (folder,file) tuple
-                sql = "INSERT [Photos_in_filesystem] ([folder], [file]) values ('{0}','{1}')"
+                sql = "INSERT [Photos_In_Filesystem] (Folder, Filename) values ('{0}','{1}')"
                 sql = sql.format(*photo)
             else:
                 # dictionary of values for each photo
-                sql = ("INSERT [Photos_in_filesystem] "
-                       "([folder], [file], lat, lon, bytes, gpsdate, exifdate, filedate) values "
+                sql = ("INSERT [Photos_In_Filesystem] "
+                       "(Folder, Filename, Lat, Lon, Bytes, Gpsdate, Exifdate, Filedate) values "
                        "('{folder}','{file}', {lat}, {lon}, {bytes}, '{gpsdate}', '{exifdate}', '{filedate}')")
                 sql = sql.format(**photo)
             # print(sql)
@@ -76,7 +76,7 @@ def write_photos(connection, photos):
     try:
         wcursor.commit()
     except pyodbc.Error as de:
-        return "Database error inserting into 'Photos_in_filesystem'\n" + str(connection) + '\n' + str(de)
+        return "Database error inserting into 'Photos_In_Filesystem'\n" + str(connection) + '\n' + str(de)
     return None
 
 
