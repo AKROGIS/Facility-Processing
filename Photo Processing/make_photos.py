@@ -14,6 +14,18 @@ import os
 # dependency PIL (now maintained as Pillow)
 # C:\Python27\ArcGIS10.3\Scripts\pip.exe install Pillow
 
+# dependency pyodbc
+# C:\Python27\ArcGIS10.3\Scripts\pip.exe install pyodbc
+
+try:
+    import pyodbc
+except ImportError:
+    pyodbc = None
+    print 'pyodbc module not found, make sure it is installed with'
+    print 'C:\Python27\ArcGIS10.3\Scripts\pip.exe install pyodbc'
+    sys.exit()
+
+
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
@@ -24,9 +36,24 @@ except ImportError:
 
 import apply_orientation  # dependency on PIL
 
-
 import dateutil.parser
 import dateutil.tz
+
+
+def get_connection_or_die():
+    conn_string = ("DRIVER={{SQL Server Native Client 10.0}};"
+                   "SERVER={0};DATABASE={1};Trusted_Connection=Yes;")
+    conn_string = conn_string.format('inpakrovmais', 'akr_facility')
+    try:
+        connection = pyodbc.connect(conn_string)
+    except pyodbc.Error as e:
+        print("Rats!!  Unable to connect to the database.")
+        print("Make sure your AD account has the proper DB permissions.")
+        print("Contact Regan (regan_sarwas@nps.gov) for assistance.")
+        print("  Connection: " + conn_string)
+        print("  Error: " + e[1])
+        sys.exit()
+    return connection
 
 
 def shadow(ul, wh, offset, fontsize):
@@ -137,15 +164,35 @@ def photos(parkdir):
     return [f for f in os.listdir(parkdir) if is_jpeg(os.path.join(parkdir, f))]
 
 
-def get_photo_data(park, photo):
-    # FIXME: get this data from the database
-    tag, lat, lon, date, desc = '123', '123', '123', '123', photo
-    return park, tag, lat, lon, date, desc
+def get_photo_data(conn, park, photo):
+    try:
+        row = conn.cursor().execute("""
+             SELECT L.FMSS_ID as tag, BP.Shape.Lat as lat,  BP.Shape.Long as lon,
+                    P.PhotoDate as [date], B.Common_Name as [desc]
+               FROM gis.Photos_evw as P
+          LEFT JOIN gis.BUILDING_LINK_evw as L
+                 ON L.FMSS_ID = P.Location_Id
+          LEFT JOIN gis.FMSSEXPORT as F
+                 ON f.Location = L.FMSS_ID
+          LEFT JOIN gis.Building_Point_evw as BP
+                 ON BP.Building_ID = L.Building_ID
+          LEFT JOIN GIS.Building_evw as B
+                 ON B.Building_ID = L.Building_ID
+              WHERE F.Asset_Code = 4100 AND BP.Point_Type = 0
+                AND P.Unit = ? and P.[Filename] = ?
+                """, (park, photo)).fetchone()
+    except pyodbc.Error as de:
+        print ("Database error ocurred", de)
+        row = None
+    if row:
+        return park, row.tag, row.lat, row.lon, row.date, row.desc
+    return park, 'unknown', 0, 0, None, ''
 
 
 def make_webphotos(base, config):
     origdir = os.path.join(base, "ORIGINAL")
     webdir = os.path.join(base, "WEB")
+    conn = get_connection_or_die()
 
     if not os.path.exists(origdir):
         print "Photo directory: " + origdir + " does not exit."
@@ -164,7 +211,7 @@ def make_webphotos(base, config):
             dest = os.path.join(new_park_path, photo)
             if os.path.exists(src) and (not os.path.exists(dest) or os.path.getmtime(dest) < os.path.getmtime(dest)):
                 try:
-                    data = get_photo_data(park, photo)
+                    data = get_photo_data(conn, park, photo)
                     im = Image.open(src)
                     im = apply_orientation.apply_orientation(im)
                     im.thumbnail(config['size'], Image.ANTIALIAS)
