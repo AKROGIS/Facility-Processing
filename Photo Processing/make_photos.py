@@ -63,40 +63,31 @@ def shadow(ul, wh, offset, fontsize):
 
 
 def datestr(date):
-    if not date or len(date) < 14:
+    """date is a datetime object"""
+    if not date:
         return "No Date/Time"
-    try:
-        d = dateutil.parser.parse(date)
-        if date[-1:] == 'Z':
-            d = d.astimezone(dateutil.tz.tzlocal())
-        return '{:%Y-%m-%d %I:%M:%S%p}'.format(d)
-    except ValueError:
-        return "Date/Time unknown"
+    return '{:%Y-%m-%d %I:%M:%S%p}'.format(date)
 
 
 def latlonstr(lat, lon):
-    """lat and len are string representations of floats"""
+    """lat and len are floats"""
     if not lat or not lon:
         return "Location unknown"
-    if lat[0] == '-':
+
+    latstr = "{:.6f}".format(lat)
+    lonstr = "{:.6f}".format(lon)
+
+    if lat < 0:
         latdir = 'S'
-        lat = lat[1:]
+        latstr = latstr[1:]
     else:
         latdir = 'N'
-    if lon[0] == '-':
+    if lon < 0:
         londir = 'W'
-        lon = lon[1:]
+        lonstr = lonstr[1:]
     else:
         londir = 'E'
 
-    if len(lat) < 9:
-        latstr = lat
-    else:
-        latstr = "{:.6f}".format(float(lat))
-    if len(lon) < 10:
-        lonstr = lon
-    else:
-        lonstr = "{:.6f}".format(float(lon))
     return "{0} {1}°  {2} {3}°".format(latdir, latstr, londir, lonstr)
 
 
@@ -202,6 +193,7 @@ def make_webphotos(base, config):
         os.mkdir(webdir)
 
     for park in parks(origdir):
+        print park,
         orig_park_path = os.path.join(origdir, park)
         new_park_path = os.path.join(webdir, park)
         if not os.path.exists(new_park_path):
@@ -215,8 +207,9 @@ def make_webphotos(base, config):
                     im = Image.open(src)
                     im = apply_orientation.apply_orientation(im)
                     im.thumbnail(config['size'], Image.ANTIALIAS)
-                    annotate(im, config, data)
+                    annotate(im, data, config)
                     im.save(dest)
+                    print '.',
                 except IOError:
                     print "Cannot create thumbnail for", src
 
