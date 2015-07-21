@@ -36,9 +36,6 @@ except ImportError:
 
 import apply_orientation  # dependency on PIL
 
-import dateutil.parser
-import dateutil.tz
-
 
 def get_connection_or_die():
     conn_string = ("DRIVER={{SQL Server Native Client 10.0}};"
