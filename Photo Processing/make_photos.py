@@ -7,31 +7,31 @@ __author__ = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
 __email__ = "regan_sarwas@nps.gov"
 __copyright__ = "Public Domain - product of the US Government"
 
-from PIL import Image, ImageDraw, ImageFont
+
+import sys
 import os
-import os.path
-import csv
+
+# dependency PIL (now maintained as Pillow)
+# C:\Python27\ArcGIS10.3\Scripts\pip.exe install Pillow
+
+try:
+    from PIL import Image, ImageDraw, ImageFont
+except ImportError:
+    Image, ImageDraw, ImageFont = None, None, None
+    print 'PIL module not found, make sure it is installed with'
+    print 'C:\Python27\ArcGIS10.3\Scripts\pip.exe install Pillow'
+    sys.exit()
+
+import apply_orientation  # dependency on PIL
+
+
 import dateutil.parser
 import dateutil.tz
 
-import apply_orientation
 
-root = os.path.dirname(os.path.abspath(__file__))
-photo_csv = os.path.join(root, "PhotoListWithId.csv")
-bldg_csv = os.path.join(root, "BuildingLocations.csv")
-photo_dir = os.path.join(root, "web")
-
-size = (1024, 768)
-blacks = {'L': 0, 'RGB': (0, 0, 0)}
-whites = {'L': 255, 'RGB': (255, 255, 255)}
-margin = 8
-fontsize = 18
-font = ImageFont.truetype(os.path.join(root, "ARLRDBD.TTF"), fontsize)
-
-
-def shadow(ul, wh, offset):
-    newul = (ul[0]-offset, ul[1]-offset+fontsize*.15)
-    newlr = (ul[0]+wh[0]+offset, ul[1]+fontsize+offset)
+def shadow(ul, wh, offset, fontsize):
+    newul = (ul[0] - offset, ul[1] - offset + fontsize * .15)
+    newlr = (ul[0] + wh[0] + offset, ul[1] + fontsize + offset)
     return [newul, newlr]
 
 
@@ -73,9 +73,14 @@ def latlonstr(lat, lon):
     return "{0} {1}°  {2} {3}°".format(latdir, latstr, londir, lonstr)
 
 
-def annotate(image, unit, tag, lat, lon, date, desc):
-    white = whites[image.mode]
-    black = blacks[image.mode]
+def annotate(image, data, config):
+    unit, tag, lat, lon, date, desc = data
+    font = config['font']
+    fontsize = config['fontsize']
+    margin = config['margin']
+    white = config['whites'][image.mode]
+    black = config['blacks'][image.mode]
+
     newsize = image.size  # may be smaller than the thumbnail size
     draw = ImageDraw.Draw(image)
     if not tag:
@@ -85,8 +90,8 @@ def annotate(image, unit, tag, lat, lon, date, desc):
     else:
         text = tag
     textsize = font.getsize(text)
-    origin = (margin, newsize[1]-2*(margin+fontsize))
-    rect = shadow(origin, textsize, 1)
+    origin = (margin, newsize[1] - 2 * (margin + fontsize))
+    rect = shadow(origin, textsize, 1, fontsize)
     draw.rectangle(rect, black, black)
     draw.text(origin, text, white, font)
 
@@ -95,76 +100,89 @@ def annotate(image, unit, tag, lat, lon, date, desc):
     else:
         text = unit
     textsize = font.getsize(text)
-    origin = (newsize[0]-textsize[0]-margin, newsize[1]-2*(margin+fontsize))
-    rect = shadow(origin, textsize, 1)
+    origin = (newsize[0] - textsize[0] - margin, newsize[1] - 2 * (margin + fontsize))
+    rect = shadow(origin, textsize, 1, fontsize)
     draw.rectangle(rect, black, black)
     draw.text(origin, text, white, font)
 
     text = latlonstr(lat, lon)
     textsize = font.getsize(text)
-    origin = (margin, newsize[1]-margin-fontsize)
-    rect = shadow(origin, textsize, 1)
+    origin = (margin, newsize[1] - margin - fontsize)
+    rect = shadow(origin, textsize, 1, fontsize)
     draw.rectangle(rect, black, black)
     draw.text(origin, text, white, font)
 
     text = datestr(date)
     textsize = font.getsize(text)
-    origin = (newsize[0]-textsize[0]-margin, newsize[1]-margin-fontsize)
-    rect = shadow(origin, textsize, 1)
+    origin = (newsize[0] - textsize[0] - margin, newsize[1] - margin - fontsize)
+    rect = shadow(origin, textsize, 1, fontsize)
     draw.rectangle(rect, black, black)
     draw.text(origin, text, white, font)
 
     del draw
 
 
-def main():
-    if not os.path.exists(photo_dir):
-        os.mkdir(photo_dir)
+def is_jpeg(path):
+    if not os.path.isfile(path):
+        return False
+    ext = os.path.splitext(path)[1].lower()
+    return ext in ['.jpg', '.jpeg']
 
-    bldginfo = {}
-    with open(bldg_csv, 'rb') as fh:
-        fh.readline()  # remove the header
-        bldg_reader = csv.reader(fh, delimiter=',', quotechar='"')
-        for row in bldg_reader:
-            # Lat,Long,Unit,FMSS_Id,Park_Id,Name,Description,Type,Status,Occupant,Value,Size,Date
-            # 0  ,1   ,2   ,3      ,4      ,5   ,6          ,7   ,8     ,9       ,10   ,11  ,12  
-            tag = row[3]
-            if tag:
-                #unit, lat, lon, desc
-                bldginfo[tag] = (row[2], row[0], row[1], row[6])
 
-    with open(photo_csv, 'rb') as fh:
-        fh.readline()  # remove the header
-        photo_reader = csv.reader(fh, delimiter=',', quotechar='"')
-        for row in photo_reader:
-            # Id,Date,Unit,File,Latitude,Longitude,Url
-            # 0 ,1   ,2   ,3   ,4       ,5        ,6
-            tag = row[0]
-            try:
-                unit, lat, lon, desc = bldginfo[tag]
-            except KeyError:
-                unit = row[2]
-                lat = row[4]
-                lon = row[5]
-                desc = ""
-            date = row[1]
-            name = row[3]
-            src = os.path.join(root, unit, name)
-            dest_dir = os.path.join(photo_dir, unit)
-            if not os.path.exists(dest_dir):
-                os.mkdir(dest_dir)
-            dest = os.path.join(dest_dir, name)
+def parks(parent):
+    return [f for f in os.listdir(parent) if os.path.isdir(os.path.join(parent, f))]
+
+
+def photos(parkdir):
+    return [f for f in os.listdir(parkdir) if is_jpeg(os.path.join(parkdir, f))]
+
+
+def get_photo_data(park, photo):
+    # FIXME: get this data from the database
+    tag, lat, lon, date, desc = '123', '123', '123', '123', photo
+    return park, tag, lat, lon, date, desc
+
+
+def make_webphotos(base, config):
+    origdir = os.path.join(base, "ORIGINAL")
+    webdir = os.path.join(base, "WEB")
+
+    if not os.path.exists(origdir):
+        print "Photo directory: " + origdir + " does not exit."
+        return
+
+    if not os.path.exists(webdir):
+        os.mkdir(webdir)
+
+    for park in parks(origdir):
+        orig_park_path = os.path.join(origdir, park)
+        new_park_path = os.path.join(webdir, park)
+        if not os.path.exists(new_park_path):
+            os.mkdir(new_park_path)
+        for photo in photos(orig_park_path):
+            src = os.path.join(orig_park_path, photo)
+            dest = os.path.join(new_park_path, photo)
             if os.path.exists(src) and (not os.path.exists(dest) or os.path.getmtime(dest) < os.path.getmtime(dest)):
-                #print "processing ", src
                 try:
+                    data = get_photo_data(park, photo)
                     im = Image.open(src)
                     im = apply_orientation.apply_orientation(im)
-                    im.thumbnail(size, Image.ANTIALIAS)
-                    annotate(im, unit, tag, lat, lon, date, desc)
+                    im.thumbnail(config['size'], Image.ANTIALIAS)
+                    annotate(im, config, data)
                     im.save(dest)
                 except IOError:
-                    print "cannot create web photo for ", src, " -> ", dest
+                    print "Cannot create thumbnail for", src
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(script_dir)
+    options = {
+        'size': (1024, 768),
+        'blacks': {'L': 0, 'RGB': (0, 0, 0)},
+        'whites': {'L': 255, 'RGB': (255, 255, 255)},
+        'margin': 8,
+        'fontsize': 18,
+        'font': ImageFont.truetype(os.path.join(script_dir, "ARLRDBD.TTF"), 18)
+    }
+    make_webphotos(base_dir, options)
