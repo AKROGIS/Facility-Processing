@@ -51,6 +51,7 @@ def make_thumbs(base, size):
         os.mkdir(thumbdir)
 
     for park in parks(origdir):
+        print park,
         orig_park_path = os.path.join(origdir, park)
         new_park_path = os.path.join(thumbdir, park)
         if not os.path.exists(new_park_path):
@@ -64,6 +65,7 @@ def make_thumbs(base, size):
                     im = apply_orientation.apply_orientation(im)
                     im.thumbnail(size, Image.ANTIALIAS)
                     im.save(dest)
+                    print '.',
                 except IOError:
                     print "Cannot create thumbnail for", src
 
