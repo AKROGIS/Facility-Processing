@@ -1,1 +1,0 @@
-C:\Python27\ArcGIS10.3\python.exe .\QualityCheck.py > .\QualityCheckResults.txt
