@@ -17,25 +17,39 @@ try:
     import pyodbc
 except ImportError:
     pyodbc = None
+    pydir = os.path.dirname(sys.executable)
     print 'pyodbc module not found, make sure it is installed with'
-    print 'C:\Python27\ArcGIS10.3\Scripts\pip.exe install pyodbc'
+    print pydir + r'\Scripts\pip.exe install pyodbc'
+    print 'Don''t have pip?'
+    print 'Download <https://bootstrap.pypa.io/get-pip.py> to ' + pydir + r'\Scripts\get-pip.py'
+    print 'Then run'
+    print sys.executable + ' ' + pydir + r'\Scripts\get-pip.py'
     sys.exit()
 
 
 def get_connection_or_die():
-    conn_string = ("DRIVER={{SQL Server Native Client 10.0}};"
+    conn_string = ("DRIVER={{SQL Server Native Client 11.0}};"
                    "SERVER={0};DATABASE={1};Trusted_Connection=Yes;")
     conn_string = conn_string.format('inpakrovmais', 'akr_facility')
     try:
         connection = pyodbc.connect(conn_string)
+        return connection
+    except pyodbc.Error:
+        # Try to alternative connection string for 2008
+        conn_string2 = conn_string.replace('SQL Server Native Client 11.0', 'SQL Server Native Client 10.0')
+    try:
+        connection = pyodbc.connect(conn_string)
+        return connection
     except pyodbc.Error as e:
+        # Additional alternatives are 'SQL Native Client' (2005) and 'SQL Server' (2000)
         print("Rats!!  Unable to connect to the database.")
-        print("Make sure your AD account has the proper DB permissions.")
-        print("Contact Regan (regan_sarwas@nps.gov) for assistance.")
+        print("Make sure you have the SQL Server Client installed and")
+        print("your AD account has the proper DB permissions.")
+        print("Contact regan_sarwas@nps.gov for assistance.")
         print("  Connection: " + conn_string)
+        print("         and: " + conn_string2)
         print("  Error: " + e[1])
         sys.exit()
-    return connection
 
 
 def get_building_data(connection):
@@ -52,7 +66,7 @@ def get_building_data(connection):
 def write_building_csv(filename, rows):
     with open(filename, 'wb') as f:
         f.write("Latitude,Longitude,FMSS_Id,Desc,Cost,Size,Status,Year,Occupant,Name,Park_Id\n")
-        csv_writer = csv.writer(f, delimiter=',',quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
+        csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
         for row in rows:
             csv_writer.writerow(row)
 
@@ -64,5 +78,3 @@ if __name__ == '__main__':
     data = get_building_data(conn)
     if data:
         write_building_csv(outfile, data)
-
-

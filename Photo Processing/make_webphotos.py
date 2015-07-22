@@ -11,18 +11,17 @@ __copyright__ = "Public Domain - product of the US Government"
 import sys
 import os
 
-# dependency PIL (now maintained as Pillow)
-# C:\Python27\ArcGIS10.3\Scripts\pip.exe install Pillow
-
-# dependency pyodbc
-# C:\Python27\ArcGIS10.3\Scripts\pip.exe install pyodbc
-
 try:
     import pyodbc
 except ImportError:
     pyodbc = None
+    pydir = os.path.dirname(sys.executable)
     print 'pyodbc module not found, make sure it is installed with'
-    print 'C:\Python27\ArcGIS10.3\Scripts\pip.exe install pyodbc'
+    print pydir + r'\Scripts\pip.exe install pyodbc'
+    print 'Don''t have pip?'
+    print 'Download <https://bootstrap.pypa.io/get-pip.py> to ' + pydir + r'\Scripts\get-pip.py'
+    print 'Then run'
+    print sys.executable + ' ' + pydir + r'\Scripts\get-pip.py'
     sys.exit()
 
 
@@ -30,27 +29,41 @@ try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
     Image, ImageDraw, ImageFont = None, None, None
+    pydir = os.path.dirname(sys.executable)
     print 'PIL module not found, make sure it is installed with'
-    print 'C:\Python27\ArcGIS10.3\Scripts\pip.exe install Pillow'
+    print pydir + r'\Scripts\pip.exe install Pillow'
+    print 'Don''t have pip?'
+    print 'Download <https://bootstrap.pypa.io/get-pip.py> to ' + pydir + r'\Scripts\get-pip.py'
+    print 'Then run'
+    print sys.executable + ' ' + pydir + r'\Scripts\get-pip.py'
     sys.exit()
 
 import apply_orientation  # dependency on PIL
 
 
 def get_connection_or_die():
-    conn_string = ("DRIVER={{SQL Server Native Client 10.0}};"
+    conn_string = ("DRIVER={{SQL Server Native Client 11.0}};"
                    "SERVER={0};DATABASE={1};Trusted_Connection=Yes;")
     conn_string = conn_string.format('inpakrovmais', 'akr_facility')
     try:
         connection = pyodbc.connect(conn_string)
+        return connection
+    except pyodbc.Error:
+        # Try to alternative connection string for 2008
+        conn_string2 = conn_string.replace('SQL Server Native Client 11.0', 'SQL Server Native Client 10.0')
+    try:
+        connection = pyodbc.connect(conn_string)
+        return connection
     except pyodbc.Error as e:
+        # Additional alternatives are 'SQL Native Client' (2005) and 'SQL Server' (2000)
         print("Rats!!  Unable to connect to the database.")
-        print("Make sure your AD account has the proper DB permissions.")
-        print("Contact Regan (regan_sarwas@nps.gov) for assistance.")
+        print("Make sure you have the SQL Server Client installed and")
+        print("your AD account has the proper DB permissions.")
+        print("Contact regan_sarwas@nps.gov for assistance.")
         print("  Connection: " + conn_string)
+        print("         and: " + conn_string2)
         print("  Error: " + e[1])
         sys.exit()
-    return connection
 
 
 def shadow(ul, wh, offset, fontsize):
@@ -213,7 +226,8 @@ def make_webphotos(base, config):
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    base_dir = os.path.dirname(script_dir)
+    # Assumes script is in a sub folder of the Processing folder which is sub to the photos base folder.
+    base_dir = os.path.dirname(os.path.dirname(script_dir))
     options = {
         'size': (1024, 768),
         'blacks': {'L': 0, 'RGB': (0, 0, 0)},

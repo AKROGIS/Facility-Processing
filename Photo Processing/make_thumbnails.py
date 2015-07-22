@@ -10,15 +10,17 @@ __copyright__ = "Public Domain - product of the US Government"
 import sys
 import os
 
-# dependency PIL (now maintained as Pillow)
-# C:\Python27\ArcGIS10.3\Scripts\pip.exe install Pillow
-
 try:
     from PIL import Image
 except ImportError:
     Image = None
+    pydir = os.path.dirname(sys.executable)
     print 'PIL module not found, make sure it is installed with'
-    print 'C:\Python27\ArcGIS10.3\Scripts\pip.exe install Pillow'
+    print pydir + r'\Scripts\pip.exe install Pillow'
+    print 'Don''t have pip?'
+    print 'Download <https://bootstrap.pypa.io/get-pip.py> to ' + pydir + r'\Scripts\get-pip.py'
+    print 'Then run'
+    print sys.executable + ' ' + pydir + r'\Scripts\get-pip.py'
     sys.exit()
 
 import apply_orientation  # dependency on PIL
@@ -72,6 +74,7 @@ def make_thumbs(base, size):
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    base_dir = os.path.dirname(script_dir)
+    # Assumes script is in a sub folder of the Processing folder which is sub to the photos base folder.
+    base_dir = os.path.dirname(os.path.dirname(script_dir))
     thumb_size = (200, 150)
     make_thumbs(base_dir, thumb_size)
