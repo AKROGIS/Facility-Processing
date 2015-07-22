@@ -99,6 +99,7 @@ def files_for_folders(root):
     """
     files = {}
     for folder in [f for f in os.listdir(root) if os.path.isdir(os.path.join(root, f))]:
+        print folder,
         path = os.path.join(root, folder)
         files[folder] = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     return files
