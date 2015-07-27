@@ -1,7 +1,7 @@
 USE [akr_facility]
 GO
 
-/****** Object:  View [gis].[Building_Photo_Points]    Script Date: 7/14/2015 2:39:16 PM ******/
+/****** Object:  View [gis].[Building_Photo_Points]    Script Date: 7/27/2015 11:28:19 AM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -13,7 +13,7 @@ ALTER VIEW [gis].[Building_Photo_Points] AS SELECT P.OBJECTID
            ,P.[Unit]
 		   ,P.[Filename]
 		   ,P.PhotoDate
-		   ,CONCAT('http://akrgis.nps.gov/apps/bldgs/photos/web/'
+		   ,CONCAT('http://akrgis.nps.gov/fmss/photos/web/'
 		           ,P.[Unit], '/', P.[Filename]) AS FilePath
 	   	   ,D.Common_Name
 		   ,L.FMSS_ID
