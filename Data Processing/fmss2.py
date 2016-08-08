@@ -1,7 +1,6 @@
 # Tool to query FMSS SOAP based web services as of June 21, 2016
 # Note that the older REST service was retired.
 # The new SOAP services is still underdevelopment.
-# This no longer works, as of July 27, 2016, because it is requiring authentication
 
 import urllib2
 import xml.etree.ElementTree as eT
@@ -40,38 +39,15 @@ def location_query(site_id, asset_code):
     return response
 
 
-def test():
-    asset_code = '1100'
-    site_id = 'P417'
-    response = location_query(site_id, asset_code)
-    print response
-
-
-def test_csv():
-    out_file = 'out.csv'
-    asset_code = '1100'
-    site_id = 'P417'
-    response = location_query(site_id, asset_code)
-    xml_root = eT.fromstring(response)
-    locations = xml_root.iter('LOCATIONS')
-    tags = ['LOCATION', 'DESCRIPTION', 'LO11', 'LO14', 'LO2', 'LO5', 'LO6', 'LO7', 'LO9', 'STATUS', 'YEARBUILT']
-    with open(out_file, 'wb') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(tags)
-        for location in locations:
-            data = [location.find(tag).text for tag in tags]
-            csv_writer.writerow(data)
-
-
 table_column_names = [
     'Region',
     'Park',
     'Asset_Code',   # LO2
     'Asset_Type',
+    'Parent',
     'Status',       # STATUS
     'Location',     # LOCATION
     'Description',  # DESCRIPTION
-    # 'Parent',
     # 'Facility_Type',
     # 'OB', #?Optimizer Band
     'API',  # LO5
@@ -87,7 +63,10 @@ table_column_names = [
     # 'LCS',
     # 'Long_Description'
 ]
+
 xml_tags = ['STATUS', 'LOCATION', 'DESCRIPTION', 'LO5', 'LO6', 'LO7', 'LO9', 'LO11', 'LO14', 'YEARBUILT']
+ns = '{http://www.ibm.com/maximo}'
+ns_tags = [ns + xtag for xtag in xml_tags]
 
 
 sites = {
@@ -144,10 +123,36 @@ asset_types = {
     7900: 'Amphitheater'
 }
 
+def convert_xml_to_csv(data, response, csv_writer):
+    xml_root = eT.fromstring(response)
+    locations = xml_root.iter(ns + 'LOCATIONS')
+    for location in locations:
+        attributes = [location.find(tag).text for tag in ns_tags]
+        try:
+            parent = location.find(ns + 'LOCHIERARCHY').find(ns + 'PARENT').text
+        except AttributeError:
+            parent = ''
+        row = data + [parent] + attributes
+        utf8_row = [u.encode("utf-8") for u in [unicode(n) if n is not None else u'' for n in row]]
+        csv_writer.writerow(utf8_row)
 
-def test3():
-    out_file = 'out.csv'
-    region = 'AKR'
+
+def test_service():
+    asset_code = '4100'
+    site_id = 'P117'
+    response = location_query(site_id, asset_code)
+    return response
+
+
+def test_csv(out_file):
+    with open(out_file, 'wb') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(table_column_names)
+        response = test_service()
+        convert_xml_to_csv(['AKR', 'ANIA', '4100', 'Building'], response, csv_writer)
+
+
+def build_csv(out_file, region='AKR'):
     with open(out_file, 'wb') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(table_column_names)
@@ -155,9 +160,11 @@ def test3():
             site_id = sites[site]
             for asset_code in asset_types:
                 data = [region, site, str(asset_code), asset_types[asset_code]]
+                print data
                 response = location_query(site_id, str(asset_code))
-                xml_root = eT.fromstring(response)
-                locations = xml_root.iter('LOCATIONS')
-                for location in locations:
-                    data += [location.find(tag).text for tag in xml_tags]
-                    csv_writer.writerow(data)
+                convert_xml_to_csv(data, response, csv_writer)
+
+
+# print test_service()
+# test_csv('out.csv')
+build_csv('out.csv')
