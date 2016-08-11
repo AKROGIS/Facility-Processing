@@ -40,13 +40,12 @@ def location_query(site_id, asset_code):
 
 
 table_column_names = [
-    'Region',
-    'Park',
+    'UNITCODE',
     'Asset_Code',   # LO2
     'Asset_Type',
-    'Parent',
+    'Parent_FACLOCID',
     'Status',       # STATUS
-    'Location',     # LOCATION
+    'FACLOCID',     # LOCATION
     'Description',  # DESCRIPTION
     # 'Facility_Type',
     # 'OB', #?Optimizer Band
@@ -58,13 +57,13 @@ table_column_names = [
     'Qty',  # LO14
     'YearBlt',  # YEARBUILT
     # 'Rank',
-    'Occupant'    # ORGID
+    # 'Occupant'    # NOT ORGID
     # 'Historic_Status',
     # 'LCS',
     # 'Long_Description'
 ]
 
-xml_tags = ['STATUS', 'LOCATION', 'DESCRIPTION', 'LO5', 'LO6', 'LO7', 'LO9', 'LO11', 'LO14', 'YEARBUILT', 'ORGID']
+xml_tags = ['STATUS', 'LOCATION', 'DESCRIPTION', 'LO5', 'LO6', 'LO7', 'LO9', 'LO11', 'LO14', 'YEARBUILT']
 ns = '{http://www.ibm.com/maximo}'
 ns_tags = [ns + xtag for xtag in xml_tags]
 
@@ -149,7 +148,7 @@ def test_csv(out_file):
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(table_column_names)
         response = test_service()
-        convert_xml_to_csv(['AKR', 'ANIA', '4100', 'Building'], response, csv_writer)
+        convert_xml_to_csv(['ANIA', '4100', 'Building'], response, csv_writer)
 
 
 def build_csv(out_file, region='AKR'):
@@ -159,7 +158,7 @@ def build_csv(out_file, region='AKR'):
         for site in sites:
             site_id = sites[site]
             for asset_code in asset_types:
-                data = [region, site, str(asset_code), asset_types[asset_code]]
+                data = [site, str(asset_code), asset_types[asset_code]]
                 print data
                 response = location_query(site_id, str(asset_code))
                 convert_xml_to_csv(data, response, csv_writer)
