@@ -56,15 +56,15 @@ table_column_names = [
     'DM',   # LO9
     'UM',   # LO11
     'Qty',  # LO14
-    'YearBlt'  # YEARBUILT
+    'YearBlt',  # YEARBUILT
     # 'Rank',
-    # 'Occupant',
+    'Occupant'    # ORGID
     # 'Historic_Status',
     # 'LCS',
     # 'Long_Description'
 ]
 
-xml_tags = ['STATUS', 'LOCATION', 'DESCRIPTION', 'LO5', 'LO6', 'LO7', 'LO9', 'LO11', 'LO14', 'YEARBUILT']
+xml_tags = ['STATUS', 'LOCATION', 'DESCRIPTION', 'LO5', 'LO6', 'LO7', 'LO9', 'LO11', 'LO14', 'YEARBUILT', 'ORGID']
 ns = '{http://www.ibm.com/maximo}'
 ns_tags = [ns + xtag for xtag in xml_tags]
 

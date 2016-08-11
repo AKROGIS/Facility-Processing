@@ -1,0 +1,4 @@
+Region,Park,Asset_Code,Asset_Type,Parent,Status,Location,Description,API,CRV,FCI,DM,UM,Qty,YearBlt,Occupant
+AKR,ANIA,4100,Building,95774,OPERATING,95897,ANM Outhouse for  Packers Cabin,31,11551.21,0.000,0.00,SF,,1996,NPS
+AKR,ANIA,4100,Building,95774,OPERATING,43743,ANM Alaska Packers Cabin Aniakchak,64,208974.69,0.219,45777.00,SF,,1924,NPS
+AKR,ANIA,4100,Building,,REMOVED,55722,REMOVED ANM Alaska Packers Storage Shed Ruin,50,25759.73,0.000,0.00,SF,,1930,NPS
