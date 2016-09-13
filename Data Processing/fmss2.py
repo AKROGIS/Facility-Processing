@@ -1,7 +1,10 @@
-# Tool to query FMSS SOAP based web services as of June 21, 2016
+# coding=utf8
+#  Tool to query FMSS SOAP based web services as of June 21, 2016
 # Note that the older REST service was retired.
 # The new SOAP services is still underdevelopment.
 
+import sys
+import os
 import urllib2
 import xml.etree.ElementTree as eT
 import csv
@@ -122,16 +125,26 @@ asset_types = {
     7900: 'Amphitheater'
 }
 
-def convert_xml_to_csv(data, response, csv_writer):
+
+def location_to_rows(data, location):
+    attributes = [location.find(tag).text for tag in ns_tags]
+    try:
+        parent = location.find(ns + 'LOCHIERARCHY').find(ns + 'PARENT').text
+    except AttributeError:
+        parent = ''
+    row = data + [parent] + attributes
+    return row
+
+
+def convert_xml_to_rows(data, response):
     xml_root = eT.fromstring(response)
     locations = xml_root.iter(ns + 'LOCATIONS')
-    for location in locations:
-        attributes = [location.find(tag).text for tag in ns_tags]
-        try:
-            parent = location.find(ns + 'LOCHIERARCHY').find(ns + 'PARENT').text
-        except AttributeError:
-            parent = ''
-        row = data + [parent] + attributes
+    return [location_to_rows(data, location) for location in locations]
+
+
+def convert_xml_to_csv(data, response, csv_writer):
+    rows = convert_xml_to_rows(data, response)
+    for row in rows:
         utf8_row = [u.encode("utf-8") for u in [unicode(n) if n is not None else u'' for n in row]]
         csv_writer.writerow(utf8_row)
 
@@ -151,7 +164,7 @@ def test_csv(out_file):
         convert_xml_to_csv(['ANIA', '4100', 'Building'], response, csv_writer)
 
 
-def build_csv(out_file, region='AKR'):
+def build_csv(out_file):
     with open(out_file, 'wb') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(table_column_names)
@@ -164,6 +177,158 @@ def build_csv(out_file, region='AKR'):
                 convert_xml_to_csv(data, response, csv_writer)
 
 
+def module_missing(name):
+    print 'Module {0} not found, make sure it is installed.'.format(name)
+    exec_dir = os.path.split(sys.executable)[0]
+    pip = os.path.join(exec_dir, 'Scripts', 'pip.exe')
+    if not os.path.exists(pip):
+        print ("First install pip. See instructions at: "
+               "'https://pip.pypa.io/en/stable/installing/'.")
+    print 'Install with: {0} install {1}'.format(pip, name)
+    sys.exit()
+
+
+def get_connection_or_die(server, db, user=None, password=None):
+    conn_string = "DRIVER={SQL Server Native Client 11.0};" + \
+                  "SERVER={0};DATABASE={1};".format(server, db)
+    if user is None or password is None:
+        conn_string += "Trusted_Connection=Yes;"
+    else:
+        conn_string += "Uid={0};Pwd={1};".format(user, password)
+
+    try:
+        connection = pyodbc.connect(conn_string)
+    except pyodbc.Error as e:
+        print("Rats!!  Unable to connect to the database.")
+        print("Make sure you have the SQL Server 2014 client software installed")
+        print("Make sure your account has the proper DB permissions.")
+        print("Contact Regan (regan_sarwas@nps.gov) for assistance.")
+        print("  Connection: " + conn_string)
+        print("  Error: " + e[1])
+        sys.exit()
+    return connection
+
+
+def execute_sql(connection, sql):
+    wcursor = connection.cursor()
+    wcursor.execute(sql)
+    try:
+        wcursor.commit()
+    except pyodbc.Error as de:
+        print ("Database error ocurred", de)
+
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from list l."""
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
+
+
+def create_table(connection, name):
+    # sql = ("if not exists (select * from sys.tables where name='Locations_In_CartoDB')"
+    # do not check if the table exists; I want to fail if the able exists
+    sql = ("create table [{0}] ("
+           "	[UNITCODE] [nvarchar](max) NULL,"
+           "	[Asset_Code] [int] NULL,"
+           "	[Asset_Type] [nvarchar](max) NULL,"
+           "	[Parent_FACLOCID] [nvarchar](10) NULL,"
+           "	[Status] [nvarchar](max) NULL,"
+           "	[FACLOCID] [nvarchar](10) NOT NULL,"
+           "	[Description] [nvarchar](max) NULL,"
+           "	[API] [int] NULL,"
+           "	[CRV] [numeric](38, 8) NULL,"
+           "	[FCI] [numeric](38, 8) NULL,"
+           "	[DM] [numeric](38, 8) NULL,"
+           "	[UM] [nvarchar](max) NULL,"
+           "	[Qty] [nvarchar](max) NULL,"
+           "	[YearBlt] [int] NULL,"
+           "	[Long_Description] [nvarchar](max) NULL,"
+           " CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED ([FACLOCID] ASC))").format(name)
+    execute_sql(connection, sql)
+
+
+def delete_table(connection, name):
+    sql = "drop table " + name
+    execute_sql(connection, sql)
+
+
+def escape_single_quote(s):
+    return s.replace(u"'", u"''")
+
+
+def sql_clean(row):
+    return [escape_single_quote(n) if n is not None else u'NULL' for n in row]
+
+
+def test_fill_table(connection, name):
+    wcursor = connection.cursor()
+    sql = u"insert into [{0}] ([FACLOCID], [description]) values ".format(name,)
+    values = u"(93492,'{0}')".format(u'Résumé')
+    print sql + values
+    wcursor.execute(sql + values)
+    try:
+        wcursor.commit()
+    except pyodbc.Error as de:
+        print ("Database error ocurred", de)
+
+
+def fill_table(connection, name):
+    wcursor = connection.cursor()
+    sql = u"insert into [{0}] ({1}) values ".format(name, ",".join(table_column_names))
+    for site in sites:  # in ['ANIA']:
+        site_id = sites[site]
+        for asset_code in asset_types:  # in [4100]:
+            data = [site, str(asset_code), asset_types[asset_code]]
+            print data
+            response = location_query(site_id, str(asset_code))
+            rows = convert_xml_to_rows(data, response)
+
+            # SQL Server is limited to 1000 rows in an insert
+            for chunk in chunks(rows, 999):
+                values = u','.join([(u"('{0}',{1},'{2}','{3}','{4}','{5}','{6}',{7},{8},{9},"
+                                    u"{10},'{11}','{12}',{13})").format(*sql_clean(row)) for row in chunk])
+                # print sql + values
+                wcursor.execute(sql + values)
+    try:
+        wcursor.commit()
+    except pyodbc.Error as de:
+        print ("Database error ocurred", de)
+
+
+def rename_table(connection, old_name, new_name):
+    sql = "exec sp_rename '{0}', '{1}';".format(old_name, new_name)
+    sql += "exec sp_rename '{1}.PK_{0}', 'PK_{1}', N'INDEX';".format(old_name, new_name)
+    execute_sql(connection, sql)
+
+
+def copy_column(connection, column_name, from_table, to_table):
+    key = "FACLOCID"
+    sql = ("update t set [{0}] = f.[{0}] "
+           "from [{1}] as f join [{2}] as t "
+           "on t.[{3}] = f.[{3}]"
+           "from [{1}] as f join [{2}] as t "
+           "on t.[{3}] = f.[{3}]").format(column_name, from_table, to_table, key)
+    # print sql
+    execute_sql(connection, sql)
+
+
+try:
+    import pyodbc
+except ImportError:
+    pyodbc = None
+    module_missing('pyodbc')
+
+
+def update_db():
+    conn = get_connection_or_die('inpakrovmais', 'akr_facility')
+    create_table(conn, 'FMSSExport_New')
+    fill_table(conn, 'FMSSExport_New')
+    copy_column(conn, 'Long_Description', 'FMSSExport', 'FMSSExport_New')
+    delete_table(conn, 'FMSSExport')
+    rename_table(conn, 'FMSSExport_New', 'FMSSExport')
+
+
 # print test_service()
 # test_csv('out.csv')
-build_csv('out.csv')
+# build_csv('out.csv')
+update_db()
