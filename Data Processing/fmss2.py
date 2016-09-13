@@ -248,7 +248,7 @@ def create_table(connection, name):
 
 
 def delete_table(connection, name):
-    sql = "drop table " + name
+    sql = "IF OBJECT_ID('{0}', 'U') IS NOT NULL DROP TABLE {0}; ".format(name)
     execute_sql(connection, sql)
 
 
@@ -325,6 +325,8 @@ def update_db():
     fill_table(conn, 'FMSSExport_New')
     copy_column(conn, 'Long_Description', 'FMSSExport', 'FMSSExport_New')
     delete_table(conn, 'FMSSExport')
+    #  delete_table(conn, 'FMSSExport_Old')
+    #  rename_table(conn, 'FMSSExport', 'FMSSExport_Old')
     rename_table(conn, 'FMSSExport_New', 'FMSSExport')
 
 
