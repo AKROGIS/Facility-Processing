@@ -245,7 +245,7 @@ def create_table(connection, name):
            "	[Long_Description] [nvarchar](max) NULL,"
            " CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED ([FACLOCID] ASC))").format(name)
     execute_sql(connection, sql)
-    sql = "GRANT SELECT ON [{0}] TO PUBLIC"
+    sql = "GRANT SELECT ON [{0}] TO PUBLIC".format(name)
     execute_sql(connection, sql)
 
 
