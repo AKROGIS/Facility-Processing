@@ -57,7 +57,8 @@ table_column_names = [
     'FCI',  # LO7
     'DM',   # LO9
     'UM',   # LO11
-    'Qty',  # LO14
+    'Qty',  # LO12
+    # '??',  # LO14
     'YearBlt',  # YEARBUILT
     # 'Rank',
     # 'Occupant'    # NOT ORGID
@@ -66,7 +67,7 @@ table_column_names = [
     # 'Long_Description'
 ]
 
-xml_tags = ['STATUS', 'LOCATION', 'DESCRIPTION', 'LO5', 'LO6', 'LO7', 'LO9', 'LO11', 'LO14', 'YEARBUILT']
+xml_tags = ['STATUS', 'LOCATION', 'DESCRIPTION', 'LO5', 'LO6', 'LO7', 'LO9', 'LO11', 'LO12', 'YEARBUILT']
 ns = '{http://www.ibm.com/maximo}'
 ns_tags = [ns + xtag for xtag in xml_tags]
 
@@ -127,7 +128,8 @@ asset_types = {
 
 
 def location_to_rows(data, location):
-    attributes = [location.find(tag).text for tag in ns_tags]
+    # noinspection PyUnresolvedReferences
+    attributes = [elem.text if elem is not None else None for elem in [location.find(tag) for tag in ns_tags]]
     try:
         parent = location.find(ns + 'LOCHIERARCHY').find(ns + 'PARENT').text
     except AttributeError:
