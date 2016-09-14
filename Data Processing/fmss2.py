@@ -245,6 +245,8 @@ def create_table(connection, name):
            "	[Long_Description] [nvarchar](max) NULL,"
            " CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED ([FACLOCID] ASC))").format(name)
     execute_sql(connection, sql)
+    sql = "GRANT SELECT ON [{0}] TO PUBLIC"
+    execute_sql(connection, sql)
 
 
 def delete_table(connection, name):
@@ -304,8 +306,6 @@ def rename_table(connection, old_name, new_name):
 def copy_column(connection, column_name, from_table, to_table):
     key = "FACLOCID"
     sql = ("update t set [{0}] = f.[{0}] "
-           "from [{1}] as f join [{2}] as t "
-           "on t.[{3}] = f.[{3}]"
            "from [{1}] as f join [{2}] as t "
            "on t.[{3}] = f.[{3}]").format(column_name, from_table, to_table, key)
     # print sql
