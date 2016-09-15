@@ -129,7 +129,7 @@ asset_types = {
 
 def location_to_rows(data, location):
     # noinspection PyUnresolvedReferences
-    attributes = [elem.text if elem is not None else None for elem in [location.find(tag) for tag in ns_tags]]
+    attributes = [elem.text if elem is not None else u'' for elem in [location.find(tag) for tag in ns_tags]]
     try:
         parent = location.find(ns + 'LOCHIERARCHY').find(ns + 'PARENT').text
     except AttributeError:
