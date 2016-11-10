@@ -56,7 +56,7 @@ def get_photo_data(connection):
              SELECT P.Location_Id AS id, P.Unit + '/' + P.[Filename] AS photo
                FROM gis.Photos_evw as P
           LEFT JOIN gis.FMSSEXPORT as F
-                 ON P.Asset_Code = F.Asset_Code AND P.Location_Id = F.Location -- AND P.Asset_Id AND F.Asset_ID
+                 ON P.Asset_Code = F.Asset_Code AND P.Location_Id = F.FACLOCID -- AND P.Asset_Id AND F.Asset_ID
               WHERE P.Location_Id IS NOT NULL
            ORDER BY P.Location_Id, P.PhotoDate DESC
                 """).fetchall()
