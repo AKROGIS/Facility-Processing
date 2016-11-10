@@ -174,7 +174,7 @@ def get_photo_data(conn, park, photo):
           LEFT JOIN gis.BUILDING_LINK_evw as L
                  ON L.FMSS_ID = P.Location_Id
           LEFT JOIN gis.FMSSEXPORT as F
-                 ON f.Location = L.FMSS_ID
+                 ON f.FACLOCID = L.FMSS_ID
           LEFT JOIN gis.Building_Point_evw as BP
                  ON BP.Building_ID = L.Building_ID
           LEFT JOIN GIS.Building_evw as B
