@@ -68,7 +68,7 @@ def write_building_csv(filename, rows):
         f.write("Latitude,Longitude,FMSS_Id,Desc,Cost,Size,Status,Year,Occupant,Name,Park_Id\n")
         csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
         for row in rows:
-            csv_writer.writerow(row)
+            csv_writer.writerow([unicode(x).encode('utf8') for x in row])
 
 
 if __name__ == '__main__':
