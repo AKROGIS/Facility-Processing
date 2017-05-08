@@ -323,13 +323,24 @@ except ImportError:
 
 def update_db():
     conn = get_connection_or_die('inpakrovmais', 'akr_facility')
-    create_table(conn, 'FMSSExport_New')
-    fill_table(conn, 'FMSSExport_New')
-    copy_column(conn, 'Long_Description', 'FMSSExport', 'FMSSExport_New')
-    delete_table(conn, 'FMSSExport')
-    #  delete_table(conn, 'FMSSExport_Old')
-    #  rename_table(conn, 'FMSSExport', 'FMSSExport_Old')
-    rename_table(conn, 'FMSSExport_New', 'FMSSExport')
+    try:
+        create_table(conn, 'FMSSExport_New')
+        fill_table(conn, 'FMSSExport_New')
+        copy_column(conn, 'Long_Description', 'FMSSExport', 'FMSSExport_New')
+        delete_table(conn, 'FMSSExport')
+        #  delete_table(conn, 'FMSSExport_Old')
+        #  rename_table(conn, 'FMSSExport', 'FMSSExport_Old')
+        rename_table(conn, 'FMSSExport_New', 'FMSSExport')
+    except Exception as ex:
+        print(ex)
+    finally:
+        # Make sure to remove the 'FMSSExport_New' if it exists (problem), so we can try again next time.
+        try:
+            delete_table(conn, 'FMSSExport_New')
+            print('Deleted table FMSSExport_New')
+        except pyodbc.Error as ex:
+            print(ex)
+            pass
 
 
 # print test_service()
