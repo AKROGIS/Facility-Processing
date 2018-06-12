@@ -2,6 +2,7 @@
 #  Tool to query FMSS SOAP based web services as of June 21, 2016
 # Note that the older REST service was retired.
 # The new SOAP services is still underdevelopment.
+#  Update to work as of June 4, 2018
 
 import sys
 import os
@@ -11,12 +12,13 @@ import csv
 
 
 def location_query(site_id, asset_code):
-    host = "inp2420maxsys1u:9082"
-    action = '"urn:processDocument"'
-    endpoint = r"http://inp2420maxsys1u:9082/meaweb/services/FMSSGISLOCQ"
+    #host = "mif.pfmd.nps.gov"
+    #action = '"urn:processDocument"'
+    endpoint = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISLOCQ"
 
-    query = u"""<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
-      <soap:Body>
+    query = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+      <soapenv:Header/>
+      <soapenv:Body>
         <max:QueryFMSSGISLOC xmlns:max="http://www.ibm.com/maximo">
           <max:FMSSGISLOCQuery>
             <max:LOCATIONS>
@@ -25,14 +27,15 @@ def location_query(site_id, asset_code):
             </max:LOCATIONS>
           </max:FMSSGISLOCQuery>
         </max:QueryFMSSGISLOC>
-      </soap:Body>
-    </soap:Envelope>""".format(lo2=asset_code, siteid=site_id)
+      </soapenv:Body>
+    </soapenv:Envelope>""".format(lo2=asset_code, siteid=site_id)
 
     encoded_query = query.encode('utf-8')
 
-    # SOAP 1.2 Header
-    headers = {"Host": host,
-               "Content-Type": "application/soap+xml; charset=UTF-8; action="+action,
+    # SOAP 1.1 Header
+    headers = {# "Host": host,
+               "Content-Type": 'text/xml; charset="utf-8"',
+               # "SOAPAction": action,
                "Content-Length": str(len(encoded_query))}
 
     request = urllib2.Request(url=endpoint,
@@ -347,3 +350,6 @@ def update_db():
 # test_csv('out.csv')
 # build_csv('out.csv')
 update_db()
+
+
+
