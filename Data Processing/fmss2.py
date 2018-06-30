@@ -44,6 +44,73 @@ def location_query(site_id, asset_code):
     response = urllib2.urlopen(request).read()
     return response
 
+"""
+          <int:Header>
+            <int:SenderID>SJBTEST</int:SenderID>
+          </int:Header>
+"""
+
+def frpp_query(location_id):
+    endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISFRPPQ"
+
+    query = u"""<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+      <soapenv:Header/>
+      <soapenv:Body>
+        <int:FMSSGISFRPPQ xmlns:int="http://www.ibm.com/maximo">
+          <int:Content>
+            <int:FMSSGISFRPP>
+              <int:FRPP>
+                <int:LOCATION operator="=">{locationid}</int:LOCATION>
+              </int:FRPP>
+            </int:FMSSGISFRPP>
+          </int:Content>
+        </int:FMSSGISFRPPQ>
+      </soapenv:Body>
+    </soapenv:Envelope>""".format(locationid=location_id)
+
+    encoded_query = query.encode('utf-8')
+
+    # HTTP Header for SOAP 1.2
+    headers = {"Content-Type": 'application/soap+xml; charset="utf-8"',
+               "Content-Length": str(len(encoded_query))}
+
+    request = urllib2.Request(url=endpoint,
+                              headers=headers,
+                              data=encoded_query)
+    response = urllib2.urlopen(request).read()
+    return response
+
+
+def asset_query(site_id, asset_code):
+    endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISASSETQ"
+
+    query = u"""<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+      <soapenv:Header/>
+      <soapenv:Body>
+        <max:QueryFMSSGISLOC xmlns:max="http://www.mro.com/mx/integration">
+          <max:FMSSGISLOCQuery>
+            <max:LOCATIONS>
+              <max:LO2 operator="=">{lo2}</max:LO2>
+              <max:SITEID operator="=">{siteid}</max:SITEID>
+            </max:LOCATIONS>
+          </max:FMSSGISLOCQuery>
+        </max:QueryFMSSGISLOC>
+      </soapenv:Body>
+    </soapenv:Envelope>""".format(lo2=asset_code, siteid=site_id)
+
+    encoded_query = query.encode('utf-8')
+
+    # HTTP Header for SOAP 1.2
+    headers = {"Content-Type": 'application/soap+xml; charset="utf-8"',
+               "Content-Length": str(len(encoded_query))}
+
+    request = urllib2.Request(url=endpoint,
+                              headers=headers,
+                              data=encoded_query)
+    response = urllib2.urlopen(request).read()
+    return response
+
+# No example/test for a work order query FMSSGISWOQ
 
 table_column_names = [
     'UNITCODE',
@@ -158,6 +225,10 @@ def test_service():
     asset_code = '4100'
     site_id = 'P117'
     response = location_query(site_id, asset_code)
+    return response
+
+def test_service2():
+    response = frpp_query('100905')
     return response
 
 
@@ -346,10 +417,10 @@ def update_db():
             pass
 
 
-# print test_service()
+print test_service2()
 # test_csv('out.csv')
 # build_csv('out.csv')
-update_db()
+# update_db()
 
 
 
