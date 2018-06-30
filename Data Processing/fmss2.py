@@ -14,9 +14,9 @@ import csv
 def location_query(site_id, asset_code):
     #host = "mif.pfmd.nps.gov"
     #action = '"urn:processDocument"'
-    endpoint = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISLOCQ"
+    endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISLOCQ"
 
-    query = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    query = u"""<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
       <soapenv:Header/>
       <soapenv:Body>
         <max:QueryFMSSGISLOC xmlns:max="http://www.ibm.com/maximo">
@@ -32,9 +32,9 @@ def location_query(site_id, asset_code):
 
     encoded_query = query.encode('utf-8')
 
-    # SOAP 1.1 Header
+    # HTTP Header for SOAP 1.2
     headers = {# "Host": host,
-               "Content-Type": 'text/xml; charset="utf-8"',
+               "Content-Type": 'application/soap+xml; charset="utf-8"',
                # "SOAPAction": action,
                "Content-Length": str(len(encoded_query))}
 
