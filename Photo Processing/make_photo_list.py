@@ -9,11 +9,13 @@ __copyright__ = "Public Domain - product of the US Government"
 import os
 import datetime
 import exifread   # https://pypi.python.org/pypi/ExifRead
+# C:\Python27\ArcGIS10.5\Scripts\pip.exe --cert "C:\users\resarwas\DOIRootCA.crt" install exifread
 
 #root = "/Users/regan_sarwas/Desktop/photos/"
-#root = r"T:\PROJECTS\AKR\Buildings\PhotosFromAllYears-Geotagged\2014Reprocess"
-root = os.path.dirname(os.path.abspath(__file__))
-csv = os.path.join(root, "PhotoList.csv")
+root = r"T:\PROJECTS\AKR\FMSS\Photos\Original"
+#root = os.path.dirname(os.path.abspath(__file__))
+#csv = os.path.join(root, "PhotoList.csv")
+csv = r"C:\tmp\PhotoList.csv"
 
 with open(csv, 'w') as f:
     f.write('folder,photo,id,namedate,exifdate,lat,lon,gpsdate,size,filedate\n')
