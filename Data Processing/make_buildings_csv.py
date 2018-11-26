@@ -11,7 +11,7 @@ import os.path
 import csv
 
 # dependency pyodbc
-# C:\Python27\ArcGIS10.3\Scripts\pip.exe install pyodbc
+# pip install pyodbc
 
 try:
     import pyodbc
@@ -30,7 +30,7 @@ except ImportError:
 def get_connection_or_die():
     conn_string = ("DRIVER={{SQL Server Native Client 11.0}};"
                    "SERVER={0};DATABASE={1};Trusted_Connection=Yes;")
-    conn_string = conn_string.format('inpakrovmais', 'akr_facility')
+    conn_string = conn_string.format('inpakrovmais', 'akr_facility2')
     try:
         connection = pyodbc.connect(conn_string)
         return connection
@@ -55,7 +55,16 @@ def get_connection_or_die():
 def get_building_data(connection):
     try:
         rows = connection.cursor().execute("""
-             SELECT * FROM GIS.Existing_FMSS_Buildings_For_Website
+ 	 SELECT P.Shape.STY AS Latitude,  P.Shape.STX AS Longitude, P.FACLOCID as FMSS_Id, F.[Description] AS [Desc],
+	        COALESCE(FORMAT(CAST(F.CRV AS float), 'C', 'en-us'), 'unknown') AS Cost,
+--			COALESCE(FORMAT(F.Qty, '0,0 Sq Ft', 'en-us'), 'unknown') AS Size, F.[Status] AS [Status], 
+			'unknown' AS Size, F.[Status] AS [Status], 
+			COALESCE(CAST(F.YearBlt AS nvarchar), 'unknown') AS [Year], 'unknown' AS Occupant,
+			P.BLDGNAME AS [Name], F.PARKNUMB AS Park_Id
+       FROM gis.AKR_BLDG_CENTER_PT_evw as P
+       JOIN dbo.FMSSEXPORT as F
+         ON P.FACLOCID = F.Location
+	  WHERE P.ISEXTANT = 'True'
                 """).fetchall()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)

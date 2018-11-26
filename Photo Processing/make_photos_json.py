@@ -27,7 +27,7 @@ except ImportError:
 def get_connection_or_die():
     conn_string = ("DRIVER={{SQL Server Native Client 11.0}};"
                    "SERVER={0};DATABASE={1};Trusted_Connection=Yes;")
-    conn_string = conn_string.format('inpakrovmais', 'akr_facility')
+    conn_string = conn_string.format('inpakrovmais', 'akr_facility2')
     try:
         connection = pyodbc.connect(conn_string)
         return connection
@@ -53,12 +53,11 @@ def get_photo_data(connection):
     photos = {}
     try:
         rows = connection.cursor().execute("""
-             SELECT P.Location_Id AS id, P.Unit + '/' + P.[Filename] AS photo
-               FROM gis.Photos_evw as P
-          LEFT JOIN gis.FMSSEXPORT as F
-                 ON P.Asset_Code = F.Asset_Code AND P.Location_Id = F.FACLOCID -- AND P.Asset_Id AND F.Asset_ID
-              WHERE P.Location_Id IS NOT NULL
-           ORDER BY P.Location_Id, P.PhotoDate DESC
+             SELECT COALESCE(FACLOCID, COALESCE(FEATUREID, COALESCE(FACASSETID, GEOMETRYID))) AS id,
+			        UNITCODE + '/' + ATCHALTNAME AS photo
+               FROM gis.AKR_ATTACH_evw
+              WHERE ATCHALTNAME IS NOT NULL AND (FACLOCID IS NOT NULL OR FACASSETID IS NOT NULL OR FEATUREID IS NOT NULL OR GEOMETRYID IS NOT NULL)
+           ORDER BY id, ATCHDATE DESC
                 """).fetchall()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
