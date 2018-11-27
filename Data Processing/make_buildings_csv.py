@@ -55,16 +55,18 @@ def get_connection_or_die():
 def get_building_data(connection):
     try:
         rows = connection.cursor().execute("""
- 	 SELECT P.Shape.STY AS Latitude,  P.Shape.STX AS Longitude, P.FACLOCID as FMSS_Id, F.[Description] AS [Desc],
+ 	 SELECT P.Shape.STY AS Latitude,  P.Shape.STX AS Longitude, P.FACLOCID as FMSS_Id,
+	        COALESCE(F.[Description], P.MAPLABEL) AS [Desc],
 	        COALESCE(FORMAT(CAST(F.CRV AS float), 'C', 'en-us'), 'unknown') AS Cost,
 --			COALESCE(FORMAT(F.Qty, '0,0 Sq Ft', 'en-us'), 'unknown') AS Size, F.[Status] AS [Status], 
-			'unknown' AS Size, F.[Status] AS [Status], 
-			COALESCE(CAST(F.YearBlt AS nvarchar), 'unknown') AS [Year], 'unknown' AS Occupant,
-			P.BLDGNAME AS [Name], F.PARKNUMB AS Park_Id
+			'unknown' AS Size, P.BLDGSTATUS AS [Status],
+			COALESCE(CAST(F.YearBlt AS nvarchar), 'unknown') AS [Year], P.FACOCCUPANT AS Occupant,
+			P.BLDGNAME AS [Name], P.PARKBLDGID AS Park_Id,
+            COALESCE(FACLOCID, COALESCE(FEATUREID, COALESCE(FACASSETID, GEOMETRYID))) AS Photo_Id
        FROM gis.AKR_BLDG_CENTER_PT_evw as P
-       JOIN dbo.FMSSEXPORT as F
+  LEFT JOIN dbo.FMSSEXPORT as F
          ON P.FACLOCID = F.Location
-	  WHERE P.ISEXTANT = 'True'
+	  WHERE P.ISEXTANT = 'True' AND (P.FACLOCID IS NOT NULL OR (P.ISOUTPARK <> 'Yes' AND P.FACMAINTAIN IN ('NPS','FEDERAL')))
                 """).fetchall()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
@@ -74,7 +76,7 @@ def get_building_data(connection):
 
 def write_building_csv(filename, rows):
     with open(filename, 'wb') as f:
-        f.write("Latitude,Longitude,FMSS_Id,Desc,Cost,Size,Status,Year,Occupant,Name,Park_Id\n")
+        f.write("Latitude,Longitude,FMSS_Id,Desc,Cost,Size,Status,Year,Occupant,Name,Park_Id,Photo_Id\n")
         csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
         for row in rows:
             csv_writer.writerow([unicode(x).encode('utf8') for x in row])
