@@ -168,19 +168,15 @@ def photos(parkdir):
 def get_photo_data(conn, park, photo):
     try:
         row = conn.cursor().execute("""
-             SELECT L.FMSS_ID as tag, BP.Shape.Lat as lat,  BP.Shape.Long as lon,
-                    P.PhotoDate as [date], B.Common_Name as [desc]
-               FROM gis.Photos_evw as P
-          LEFT JOIN gis.BUILDING_LINK_evw as L
-                 ON L.FMSS_ID = P.Location_Id
-          LEFT JOIN gis.FMSSEXPORT as F
-                 ON f.FACLOCID = L.FMSS_ID
-          LEFT JOIN gis.Building_Point_evw as BP
-                 ON BP.Building_ID = L.Building_ID
-          LEFT JOIN GIS.Building_evw as B
-                 ON B.Building_ID = L.Building_ID
-              WHERE F.Asset_Code = 4100 AND BP.Point_Type = 0
-                AND P.Unit = ? and P.[Filename] = ?
+             SELECT B.FACLOCID as tag, B.Shape.STY as lat,  B.Shape.STX as lon,
+                    P.ATCHDATE as [date], B.MAPLABEL as [desc]
+               FROM gis.AKR_ATTACH_evw as P
+          LEFT JOIN gis.AKR_BLDG_CENTER_PT_evw as B
+                 ON B.FACLOCID = P.FACLOCID OR B.FACASSETID = P.FACASSETID OR B.FEATUREID = P.FEATUREID OR B.GEOMETRYID = P.GEOMETRYID 
+          LEFT JOIN dbo.FMSSEXPORT as F
+                 ON f.Location = B.FACLOCID
+              WHERE F.Asset_Code = 4100
+                AND P.UNITCODE = ? and P.ATCHALTNAME = ?
                 """, (park, photo)).fetchone()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
