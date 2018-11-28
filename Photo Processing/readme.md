@@ -1,50 +1,114 @@
-Master documents:
-	MasterPhotoList.xlsx
-	All_Buildings_V6.gdb
-	All_Buildings_V6.mxd
-	{UnitCode}/*.jpg
+This folder was created by Joel Cusick.  Regan Sarwas assisted with the documentation.
+It is also used for documenting photos (in `PhotoCSVLoader.csv`) that need 
+to be added to the `akr_facility2` geodatabase.
+The folder `Done Processing` contains processed and datestamped versions of
+`PhotoCSVLoader.csv`
+This folder can also be used for the temporary processing (renaming) of photos
+prior to storing them into a sub folder of `..\ORIGINAL`.
 
-If the building spatial data has changed:
-  Run CreateWebData.py (in ../../2015/Regan's Updates)
-		- Creates BuildingLocations.csv
-	Update the building footprint web mapping service
-	
-If the list of photos has changed
-	Export MasterPhotoList.xlsx to MasterPhotoListCopy.csv
-		- Creates  MasterPhotoListCopy.csv
+Photo List
+==========
+* Edit `PhotoCSVLoader.csv` to document photos that should be added to the
+  facility photos.  These photos can document any feature in the `akr_facility2`
+  geodatabase.
 
-If the photo files have changed
-	Run make_photo_list.py
-		- Creates PhotoList.csv
-	Run check_photofiles.py
-	Fix issues.
-	Go back to the beginning
+* This file can be edited in MS Excel, but must be saved as a CSV file.
+  **WARNING:** Excel can badly irrepairably dates in a CSV file and may not respect
+  ISO formating (required for database transfer). I strongly recommend that you do some
+  testing on a copy and the open the CSV file in a text editor to check your settings.
+  A good tip is to format the date columns with a custom format of `yyyy-mm-ddThh:mm:ss`
+  Also try not to used commas in the notes or filenames.
 
-	
-Run check_bldgs.py
-	Check on issues (fixing is optional, but only matches will appear in website)
-	If you fixed issues, go back to the beginning
+* Requirements of the fields in `PhotoCSVLoader.csv`
 
-Run make_photo_list_with_id.py
-	- Creates PhotoListWithId
-Run make_bldg_loc.py
-	- Creates BldgWithPhotos.csv
-Run make_photo_loc.py
-	- Creates PhotosNoBldg.csv
-Run make_photos.py and make_thumbnails.py
-	- Creates thumbnail and web-res (watermarked) photos
-Run make_json.py
-  - Creates photos.js
-Move the following files and folders to the website
-	BldgWithPhotos.csv
-	PhotosNoBldg.csv
-  photos.js
-	thumb folder (only necessary to copy new files)
-	web folders (only necessary to copy new files)
+  * UNITCODE => AKR_ATTACH.UNITCODE
+    
+    Required.  This must be one of the well known AKR UNITCODE domain values
+    Any invalid values will be rejected during QC.  This will also be the sub folder
+    in `` where the original image will be archived.
 
+  * FILENAME => AKR_ATTACH.ATCHALTNAME
+    
+    Required.  The filename of the photo, including the extension (i.e. .jpg)
+    The file name must not include the directory path.  The only restriction on the
+    file name is that is unique among all photos in a UNITCODE.  If it is not unique,
+    a numberical suffix will be added to make it unique.
+    Typically photo files have been renamed with a FMSS location ID (when available),
+    and the timestamp.
 
-SPECIAL NOTES:
-The computer running the python scripts must have python installed (comes with ArcGIS)
-You must also have the following python modules loaded:
-	exifread - https://pypi.python.org/pypi/ExifRead
-	pillow 2.x - https://pypi.python.org/pypi/Pillow
+  * TIMESTAMP => AKR_ATTACH.ATCHDATE (AKR extension)
+    
+    Required. The date/time that the photo was taken.  It must be
+    an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) formatted date/time
+    (i.e. YYYY-MM-DDThh:mm:ss).  It will be used to sort the photos.
+
+  * FACLOCID => AKR_ATTACH.FACLOCID
+    
+    Optional. A foreign key to the FACLOCID of any spatial record in `akr_facility2`
+    This will link this photo to a feature (facility) and location in the geodatabase.
+    Multiple foreign keys can be provided, but is usually only done to link the photo
+    to several different features.
+ 
+  * FACASSETID => AKR_ATTACH.FACASSETID
+    
+    Optional. A foreign key to the FACASSETID of any spatial record in `akr_facility2`
+    This will link this photo to a feature (facility) and location in the geodatabase.
+    Multiple foreign keys can be provided, but is usually only done to link the photo
+    to several different features.
+ 
+  * FEATUREID => AKR_ATTACH.FEATUREID
+    
+    Optional. A foreign key to the FEATUREID of any spatial record in `akr_facility2`
+    This will link this photo to a feature (facility) and location in the geodatabase.
+    Multiple foreign keys can be provided, but is usually only done to link the photo
+    to several different features.
+
+  * GEOMETRYID => AKR_ATTACH.GEOMETRYID
+    
+    Optional. A foreign key to the GEOMETRYID of any spatial record in `akr_facility2`
+    This will link this photo to a feature (facility) and location in the geodatabase.
+    Multiple foreign keys can be provided, but is usually only done to link the photo
+    to several different features.
+ 
+  * ORIGINALPATH => AKR_ATTACH.ATCHSOURCE (AKR extension)
+    
+    Optional. The network location of the original source photo.
+    If this is not provided, it is assumed the original photo is in
+    `T:\PROJECTS\AKR\FMSS\PHOTOS\ORIGINAL`. Furthermore all photos will be copied from
+    the `Original_Photo_Path` to `T:\PROJECTS\AKR\FMSS\PHOTOS\ORIGINAL`, unless it has
+    already been copied.
+ 
+  * CREATEUSER => AKR_ATTACH.CREATEUSER
+    
+    Optional. This is the full name (or login name) of the user who added
+    this photo to the CSV.  It is useful for resolving any issues that occur during processing.
+    If not provided 'AKRO_GIS' will be used, and the photo will be ignored if there are
+    processing issues.
+ 
+  * CREATEDATE => AKR_ATTACH.CREATEDATE
+    
+    This is the date/time the user added the photo to the CSV file.  If not provided,
+    It will be the date/time the CSV record is added to the `AKR_ATTACH` table in `akr_facility2`
+    It must be an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) formatted date/time
+    (i.e. YYYY-MM-DDThh:mm:ss)
+ 
+  * NOTES => AKR_ATTACH.NOTES
+    
+    Optional. Any comments about this photo.
+
+Scripts:
+========
+ Master copies of these scripts are at:
+ https://github.com/regan-sarwas/Building-QC/tree/master/Photo%20Processing
+ 
+ make_photo_list_in_database.py
+ ------------------------------
+ Run this after files have been added, deleted replaced or renamed in ORIGINAL.
+ This will replace the list of files the database so that the QC queries are using
+ the current state of the filesystem. See akr_facility.dbo.Photos_In_Filesystem 
+
+ Use the Query called *akr_facility.gis.QC_Photo_Problems* to find any mismatch problems
+ between the Photos table in SDE and the photo files in the ORIGINAL folder.
+
+ After making changes to the photos, you will also want to visit the *website scripts*
+ folder for instructions on updating the photos on the website.
