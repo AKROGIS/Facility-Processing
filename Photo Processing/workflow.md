@@ -7,6 +7,30 @@ relative paths to find the necessary resources.  Therefore if everything in
 `T:\PROJECTS\AKR\FMSS\PHOTOS` is moved to a different location, it should all
 still work.
 
+**NOTE:**
+  *This process is **NOT** for geotagged photos (such as from a mobile device).
+   Those photos will go into the akr_facility2.AKR_ATTACH_PT feature class
+   using a TBD process.*
+          
+Photo Providers
+---------------
+  * This process is for photos that will be linked to a geographic feature in the
+    `akr_facility2` database.  These photos can be linked to the items by `FACLOCID`,
+    `FACASSETID`, `FEATUREID`, OR `GEOMETRYID`.
+  * Each new photo must be documented in `.\PROCESSING\PhotoCSVLoader.csv`.  See
+    `.\PROCESSING\Readme.html` for details on the column values.
+  * The original full resolution un-watermarked version of the photos should be copied
+    to the correct park folder under `.\ORIGINAL`.  The file name is not important, but
+    it must be a unique name in the park folder. **WARNING** Be very careful that
+    you do not overwrite an existing photo.  Not only will you destroy a photo
+    that may be irreplaceable, but you will also create an inconsistency that may be hard
+    to resolve.
+  * Run the script `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py`
+    and resolve any issues with missing or mis-named photo files before proceeding.
+
+
+PDS Data Manager
+----------------
   1. Check for records in `.\PROCESSING\PhotoCSVLoader.csv`
      * If there are none, you are done.
   2. For any photo listed in `.\PROCESSING\PhotoCSVLoader.csv`
