@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
-"""Creates and updates a collection of web photos (with annotation) for photos listed in a CSV"""
+"""Creates and updates a collection of web photos (with annotation) for photos listed in a CSV
 
-__author__ = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
-__email__ = "regan_sarwas@nps.gov"
-__copyright__ = "Public Domain - product of the US Government"
-
+author: Regan Sarwas, GIS Team, Alaska Region, National Park Service"
+email: regan_sarwas@nps.gov"
+"""
 
 import sys
 import os
@@ -98,7 +96,7 @@ def latlonstr(lat, lon):
     else:
         londir = 'E'
 
-    return "{0} {1}°  {2} {3}°".format(latdir, latstr, londir, lonstr)
+    return "{0} {1}Â°  {2} {3}Â°".format(latdir, latstr, londir, lonstr)
 
 
 def annotate(image, data, config):
