@@ -2,6 +2,9 @@
 
 """Creates and updates a collection of web photos (with annotation) for photos listed in a CSV
 
+It assumes that the photos are in the AKR_ATTACH table and they have a link to an
+FMSS feature for annotation details.
+
 author: Regan Sarwas, GIS Team, Alaska Region, National Park Service"
 email: regan_sarwas@nps.gov"
 """
@@ -165,15 +168,28 @@ def photos(parkdir):
 def get_photo_data(conn, park, photo):
     try:
         row = conn.cursor().execute("""
-             SELECT B.FACLOCID as tag, B.Shape.STY as lat,  B.Shape.STX as lon,
-                    P.ATCHDATE as [date], B.MAPLABEL as [desc]
-               FROM gis.AKR_ATTACH_evw as P
-          LEFT JOIN gis.AKR_BLDG_CENTER_PT_evw as B
-                 ON B.FACLOCID = P.FACLOCID OR B.FACASSETID = P.FACASSETID OR B.FEATUREID = P.FEATUREID OR B.GEOMETRYID = P.GEOMETRYID 
-          LEFT JOIN dbo.FMSSEXPORT as F
-                 ON f.Location = B.FACLOCID
-              WHERE F.Asset_Code = 4100
-                AND P.UNITCODE = ? and P.ATCHALTNAME = ?
+             SELECT COALESCE(p.FACLOCID, COALESCE(p.FACASSETID, COALESCE(p.FEATUREID, 'no id'))) AS tag
+			       ,fc.lat,  fc.lon
+                   ,LEFT(p.ATCHDATE,19) AS [date]
+				   ,COALESCE(a.[description], COALESCE(f.[description], COALESCE(fc.MAPLABEL, COALESCE(fc.[NAME], 'no name')))) AS [desc]
+               FROM gis.AKR_ATTACH_evw as p
+          LEFT JOIN dbo.FMSSEXPORT as f
+                 ON f.Location = P.FACLOCID
+          LEFT JOIN dbo.FMSSExport_Asset as a
+                 ON a.Asset = p.FACASSETID
+          LEFT JOIN (SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, BLDGNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.AKR_BLDG_CENTER_PT_evw
+		             union all
+		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, TRLFEATNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.TRAILS_FEATURE_PT_evw
+		             union all
+		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, TRLNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.TRAILS_LN_evw
+		             union all
+		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, RDNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.ROADS_LN_evw
+		             union all
+		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat, Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
+					 )
+				 AS fc
+                 ON fc.FACLOCID = P.FACLOCID OR fc.FACASSETID = P.FACASSETID OR fc.FEATUREID = P.FEATUREID OR fc.GEOMETRYID = P.GEOMETRYID 
+              WHERE P.UNITCODE = ? and P.ATCHALTNAME = ?
                 """, (park, photo)).fetchone()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
