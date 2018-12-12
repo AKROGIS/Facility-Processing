@@ -113,7 +113,7 @@ def annotate(image, data, config):
     draw = ImageDraw.Draw(image)
     if not tag:
         tag = "Unknown FMSS ID"
-    if desc:
+    if unit:
         text = unit + " - " + tag
     else:
         text = tag
@@ -168,7 +168,8 @@ def photos(parkdir):
 def get_photo_data(conn, park, photo):
     try:
         row = conn.cursor().execute("""
-             SELECT COALESCE(p.FACLOCID, COALESCE(p.FACASSETID, COALESCE(p.FEATUREID, 'no id'))) AS tag
+             SELECT p.UNITCODE as unit
+                   ,COALESCE(p.FACLOCID, COALESCE(p.FACASSETID, COALESCE(p.FEATUREID, 'no id'))) AS tag
 			       ,fc.lat,  fc.lon
                    ,LEFT(p.ATCHDATE,19) AS [date]
 				   ,COALESCE(a.[description], COALESCE(f.[description], COALESCE(fc.MAPLABEL, COALESCE(fc.[NAME], 'no name')))) AS [desc]
@@ -188,8 +189,8 @@ def get_photo_data(conn, park, photo):
 		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat, Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
 					 )
 				 AS fc
-                 ON fc.FACLOCID = P.FACLOCID OR fc.FACASSETID = P.FACASSETID OR fc.FEATUREID = P.FEATUREID OR fc.GEOMETRYID = P.GEOMETRYID 
-              WHERE P.UNITCODE = ? and P.ATCHALTNAME = ?
+                 ON fc.FACLOCID = p.FACLOCID OR fc.FACASSETID = p.FACASSETID OR fc.FEATUREID = p.FEATUREID OR fc.GEOMETRYID = p.GEOMETRYID 
+              WHERE p.UNITCODE = ? and p.ATCHALTNAME = ?
                 """, (park, photo)).fetchone()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
