@@ -73,11 +73,10 @@ def shadow(ul, wh, offset, fontsize):
 
 
 def datestr(date):
-    """date is a datetime object"""
+    """date is a ISO formated date time string"""
     if not date:
         return "No Date/Time"
-    return '{:%Y-%m-%d %I:%M:%S%p}'.format(date)
-
+    return date
 
 def latlonstr(lat, lon):
     """lat and len are floats"""
