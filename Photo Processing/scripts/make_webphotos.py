@@ -160,11 +160,23 @@ def parks(parent):
     return [f for f in os.listdir(parent) if os.path.isdir(os.path.join(parent, f))]
 
 
+def folders(start_dir):
+    start_dir = start_dir + '\\'
+    results = []
+    for root, dirs, files in os.walk(start_dir):
+        relative_path = root.replace(start_dir, '')
+        for d in dirs:
+                results.append(os.path.join(relative_path, d))
+    return results
+
+
 def photos(parkdir):
     return [f for f in os.listdir(parkdir) if is_jpeg(os.path.join(parkdir, f))]
 
 
 def get_photo_data(conn, park, photo):
+    # Park is the relative path to a folder containing photo
+    # Do not assume that park is only the UNITCODE (this was an old convention and we now have subfolders)
     try:
         row = conn.cursor().execute("""
              SELECT p.UNITCODE as unit
@@ -210,7 +222,7 @@ def make_webphotos(base, config, conn):
     if not os.path.exists(webdir):
         os.mkdir(webdir)
 
-    for park in parks(origdir):
+    for park in folders(origdir):
         print park,
         orig_park_path = os.path.join(origdir, park)
         new_park_path = os.path.join(webdir, park)
