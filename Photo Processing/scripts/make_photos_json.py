@@ -54,7 +54,7 @@ def get_photo_data(connection):
     try:
         rows = connection.cursor().execute("""
              SELECT COALESCE(FACLOCID, COALESCE(FEATUREID, COALESCE(FACASSETID, GEOMETRYID))) AS id,
-			        UNITCODE + '/' + ATCHALTNAME AS photo
+			        REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '') AS photo
                FROM gis.AKR_ATTACH_evw
               WHERE ATCHALTNAME IS NOT NULL AND (FACLOCID IS NOT NULL OR FACASSETID IS NOT NULL OR FEATUREID IS NOT NULL OR GEOMETRYID IS NOT NULL)
            ORDER BY id, ATCHDATE DESC

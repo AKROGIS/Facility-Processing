@@ -44,10 +44,10 @@ def get_connection_or_die():
 def get_database_photos(connection):
     try:
         rows = connection.cursor().execute("""
-            SELECT UNITCODE + '/' + ATCHALTNAME AS Name
+            SELECT REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '')
               FROM gis.AKR_ATTACH_evw
              WHERE ATCHTYPE = 'Photo' 
-               AND ATCHLINK LIKE 'http%://akrgis.nps.gov/fmss/photos/%'
+               AND ATCHLINK LIKE 'https://akrgis.nps.gov/fmss/photos/web/%'
         """).fetchall()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
@@ -82,6 +82,18 @@ def folder_file_tuples(root):
         for name in folders[folder]:
             pairs.append((folder, name))
     return pairs
+
+
+def photos_below(dir):
+    dir = dir + '\\'
+    results = []
+    for root, dirs, files in os.walk(dir):
+        relative_path = root.replace(dir, '')
+        print relative_path,
+        for filename in files:
+            if is_image(filename):
+                results.append(os.path.join(relative_path, filename))
+    return results
 
 
 def files_in_csv(csv_path):
@@ -130,8 +142,9 @@ if __name__ == '__main__':
     base_dir = os.path.dirname(script_dir)
     photo_dir = os.path.join(base_dir, "ORIGINAL")
     print('\nReading Folders in ' + photo_dir)
-    photo_tuples = [t for t in folder_file_tuples(photo_dir) if is_jpeg(t[1])]
-    fs_photo_set = set([(t[0]+'/'+t[1]).lower() for t in photo_tuples])
+    #photo_tuples = [t for t in folder_file_tuples(photo_dir) if is_jpeg(t[1])]
+    #fs_photo_set = set([(t[0]+'/'+t[1]).lower() for t in photo_tuples])
+    fs_photo_set = set([p.lower().replace('\\', '/') for p in photos_below(photo_dir)])
     print('\nFound {0} unique files in the Filesystem.'.format(len(fs_photo_set)))
     print('')
 

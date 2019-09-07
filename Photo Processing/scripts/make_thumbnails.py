@@ -37,6 +37,16 @@ def parks(parent):
     return [f for f in os.listdir(parent) if os.path.isdir(os.path.join(parent, f))]
 
 
+def folders(start_dir):
+    start_dir = start_dir + '\\'
+    results = []
+    for root, dirs, files in os.walk(start_dir):
+        relative_path = root.replace(start_dir, '')
+        for d in dirs:
+                results.append(os.path.join(relative_path, d))
+    return results
+
+
 def photos(parkdir):
     return [f for f in os.listdir(parkdir) if is_jpeg(os.path.join(parkdir, f))]
 
@@ -52,7 +62,7 @@ def make_thumbs(base, size):
     if not os.path.exists(thumbdir):
         os.mkdir(thumbdir)
 
-    for park in parks(origdir):
+    for park in folders(origdir):
         print park,
         orig_park_path = os.path.join(origdir, park)
         new_park_path = os.path.join(thumbdir, park)
