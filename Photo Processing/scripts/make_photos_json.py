@@ -52,6 +52,8 @@ def get_connection_or_die():
 def get_photo_data(connection):
     photos = {}
     try:
+        # FIXME - This only returns one ID for each photo
+        #   some photos have multiple IDs (some buildings and building assets have FMSS ID(s) and a FEATUREID)
         rows = connection.cursor().execute("""
              SELECT COALESCE(FACLOCID, COALESCE(FEATUREID, COALESCE(FACASSETID, GEOMETRYID))) AS id,
 			        REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '') AS photo
