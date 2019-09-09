@@ -177,37 +177,42 @@ def photos(parkdir):
 def get_photo_data(conn, park, photo):
     # Park is the relative path to a folder containing photo
     # Do not assume that park is only the UNITCODE (this was an old convention and we now have subfolders)
+    search_term = '%/web/' + park.replace('\\','/') + '/' + photo
     try:
+        # FIXME - This query is really slow. I suspect the ORs in the JOIN clause, and unioning many feature classes
         row = conn.cursor().execute("""
-             SELECT p.UNITCODE as unit
-                   ,COALESCE(p.FACLOCID, COALESCE(p.FACASSETID, COALESCE(p.FEATUREID, 'no id'))) AS tag
+             SELECT fc.UNITCODE as unit
+                   ,COALESCE(a.Location +'/'+ a.Asset, COALESCE(f.Location, 'No FMSS ID')) AS tag
 			       ,fc.lat,  fc.lon
                    ,LEFT(p.ATCHDATE,19) AS [date]
-				   ,COALESCE(a.[description], COALESCE(f.[description], COALESCE(fc.MAPLABEL, COALESCE(fc.[NAME], 'no name')))) AS [desc]
+				   ,COALESCE(fc.MAPLABEL, COALESCE(fc.[Name], COALESCE(a.[description], COALESCE(f.[description], 'no name')))) AS [desc]
                FROM gis.AKR_ATTACH_evw as p
-          LEFT JOIN dbo.FMSSEXPORT as f
-                 ON f.Location = P.FACLOCID
-          LEFT JOIN dbo.FMSSExport_Asset as a
-                 ON a.Asset = p.FACASSETID
-          LEFT JOIN (SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, BLDGNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.AKR_BLDG_CENTER_PT_evw
+          LEFT JOIN (SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, BLDGNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.AKR_BLDG_CENTER_PT_evw
 		             union all
-		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, TRLFEATNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.TRAILS_FEATURE_PT_evw
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, 
+                            CASE WHEN TRLFEATTYPE = 'Other' THEN TRLFEATTYPEOTHER ELSE TRLFEATTYPE END + 
+                            CASE WHEN TRLFEATSUBTYPE is NULL THEN '' ELSE ', ' + TRLFEATSUBTYPE END AS [Name],
+                            Shape.STY as lat, Shape.STX as lon from gis.TRAILS_FEATURE_PT_evw
 		             union all
-		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, TRLNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.TRAILS_LN_evw
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, TRLNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.TRAILS_LN_evw
 		             union all
-		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, RDNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.ROADS_LN_evw
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, RDNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.ROADS_LN_evw
 		             union all
-		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat, Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat, Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
 					 )
 				 AS fc
                  ON fc.FACLOCID = p.FACLOCID OR fc.FACASSETID = p.FACASSETID OR fc.FEATUREID = p.FEATUREID OR fc.GEOMETRYID = p.GEOMETRYID
+          LEFT JOIN dbo.FMSSEXPORT as f
+                 ON f.Location = fc.FACLOCID
+          LEFT JOIN dbo.FMSSExport_Asset as a
+                 ON a.Asset = fc.FACASSETID
               WHERE p.ATCHLINK LIKE ?
-                """, ('%/web/' + park + '/' + photo)).fetchone()
+                """, search_term).fetchone()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
         row = None
     if row:
-        return park, row.tag, row.lat, row.lon, row.date, row.desc
+        return row.unit, row.tag, row.lat, row.lon, row.date, row.desc
     return park, 'unknown', 0, 0, None, ''
 
 
@@ -248,7 +253,7 @@ if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Assumes script is in a sub folder of the Processing folder which is sub to the photos base folder.
     base_dir = os.path.dirname(os.path.dirname(script_dir))
-    base_dir = r'c:\fixme\set\test\dir'
+    # base_dir = r'C:\tmp\facility_photos\test'
     options = {
         'size': (1024, 768),
         'blacks': {'L': 0, 'RGB': (0, 0, 0)},
