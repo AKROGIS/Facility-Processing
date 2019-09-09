@@ -163,7 +163,7 @@ def parks(parent):
 def folders(start_dir):
     start_dir = start_dir + '\\'
     results = []
-    for root, dirs, files in os.walk(start_dir):
+    for root, dirs, _ in os.walk(start_dir):
         relative_path = root.replace(start_dir, '')
         for d in dirs:
                 results.append(os.path.join(relative_path, d))
@@ -200,9 +200,9 @@ def get_photo_data(conn, park, photo):
 		             SELECT FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat, Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
 					 )
 				 AS fc
-                 ON fc.FACLOCID = p.FACLOCID OR fc.FACASSETID = p.FACASSETID OR fc.FEATUREID = p.FEATUREID OR fc.GEOMETRYID = p.GEOMETRYID 
-              WHERE p.UNITCODE = ? and p.ATCHALTNAME = ?
-                """, (park, photo)).fetchone()
+                 ON fc.FACLOCID = p.FACLOCID OR fc.FACASSETID = p.FACASSETID OR fc.FEATUREID = p.FEATUREID OR fc.GEOMETRYID = p.GEOMETRYID
+              WHERE p.ATCHLINK LIKE ?
+                """, ('%/web/' + park + '/' + photo)).fetchone()
     except pyodbc.Error as de:
         print ("Database error ocurred", de)
         row = None
@@ -248,6 +248,7 @@ if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Assumes script is in a sub folder of the Processing folder which is sub to the photos base folder.
     base_dir = os.path.dirname(os.path.dirname(script_dir))
+    base_dir = r'c:\fixme\set\test\dir'
     options = {
         'size': (1024, 768),
         'blacks': {'L': 0, 'RGB': (0, 0, 0)},
