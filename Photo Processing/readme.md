@@ -76,6 +76,11 @@ Photo List
     Multiple foreign keys can be provided, but is usually only done to link the photo
     to several different features.
 
+  * DESCRIPTION => AKR_ATTACH.ATCHNAME
+
+    Optional. A name or description for the content of this photo.
+    If empty it will default to `Photo of Building`.
+
   * ORIGINALPATH => AKR_ATTACH.ATCHSOURCE (AKR extension)
 
     Optional. The network location of the original source photo.
