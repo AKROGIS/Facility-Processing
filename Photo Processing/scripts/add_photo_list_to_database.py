@@ -69,10 +69,10 @@ def read_csv(csv_path):
 def fix_photos(photos):
     today = datetime.date.today().isoformat()
     for photo in photos:
-        if not photo[9]:
-            photo[9] = 'AKRO_GIS'
         if not photo[10]:
-            photo[10] = today
+            photo[10] = 'AKRO_GIS'
+        if not photo[11]:
+            photo[11] = today
     return photos
 
 
@@ -113,13 +113,16 @@ def write_photos(connection, version, photos):
             wcursor.execute(sql)
             sql = "EXEC sde.edit_version '{0}', 1;".format(version)  # Start editing
             wcursor.execute(sql)
-            #UNITCODE,FILENAME,TIMESTAMP,FACLOCID,FACASSETID,FEATUREID,GEOMETRYID,DESCRIPTION,ORIGINALPATH,CREATEUSER,CREATEDATE,NOTES
+            #UNITCODE,FOLDER,FILENAME,TIMESTAMP,FACLOCID,FACASSETID,FEATUREID,GEOMETRYID,DESCRIPTION,ORIGINALPATH,CREATEUSER,CREATEDATE,NOTES
             for photo in photos:
-                link = 'https://akrgis.nps.gov/fmss/photos/web/{0}/{1}'.format(photo[0],photo[1])
+                if (photo[1]):
+                    link = 'https://akrgis.nps.gov/fmss/photos/web/{0}/{1}/{2}'.format(photo[0],photo[1],photo[2])
+                else:
+                    link = 'https://akrgis.nps.gov/fmss/photos/web/{0}/{1}'.format(photo[0],photo[2])
                 photo_db = ["'{0}'".format(i) if i else 'NULL' for i in photo] # all attributes are either string or NULL
                 sql = ("INSERT gis.AKR_ATTACH_evw "
                     "(ATCHLINK, UNITCODE, ATCHALTNAME, ATCHDATE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, ATCHNAME, ATCHSOURCE, CREATEUSER, CREATEDATE, NOTES) "
-                    "VALUES ('{0}', {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12});")
+                    "VALUES ('{0}', {1}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13});")
                 sql = sql.format(link, *photo_db)
                 wcursor.execute(sql)
             sql = "EXEC dbo.Calc_Attachments '{0}';".format(version)  # Do automated calcs
@@ -154,7 +157,7 @@ if __name__ == '__main__':
     if not new_photos:
         print("There are no photos to add")
         sys.exit()
-    if len(new_photos[0]) != 12:
+    if len(new_photos[0]) != 13:
         print("There are the wrong number of columns in the Photos CSV")
         sys.exit()
     conn = get_connection_or_die('inpakrovmais', 'akr_facility2')

@@ -27,13 +27,19 @@ Photo List
 
 * Requirements of the fields in `PhotoCSVLoader.csv`
 
-  * UNITCODE => AKR_ATTACH.UNITCODE
+  * UNITCODE => AKR_ATTACH.UNITCODE and part of AKR_ATTACH.ATCHLINK
 
     Required.  This must be one of the well known AKR UNITCODE domain values
     Any invalid values will be rejected during QC.  This will also be the sub folder
     in `..\ORIGINAL` where the original image will be archived.
 
-  * FILENAME => AKR_ATTACH.ATCHALTNAME
+  * FOLDER => part of AKR_ATTACH.ATCHLINK
+
+    Optional.  The folder or path under the `..\ORIGINAL\{UNITCODE}`, and in
+    which the file called FILENAME will be found. Separate path elements with
+    a slash (/), not a backslash (\\).
+
+  * FILENAME => AKR_ATTACH.ATCHALTNAME and part of AKR_ATTACH.ATCHLINK
 
     Required.  The filename of the photo, including the extension (i.e. .jpg)
     The file name must not include the directory path.  The only restriction on the

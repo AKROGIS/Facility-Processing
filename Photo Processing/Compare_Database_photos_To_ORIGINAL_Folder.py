@@ -104,8 +104,13 @@ def files_in_csv(csv_path):
         csv_reader = csv.reader(f)
         for row in csv_reader:
             unit = row[0]
-            name = row[1]
-            files.add("{0}/{1}".format(unit,name).lower())
+            folder = row[1]
+            name = row[2]
+            if folder:
+                path = "{0}/{1}/{2}".format(unit,folder,name)
+            else:
+                path = "{0}/{1}".format(unit,name)
+            files.add(path.lower())
     return files
 
 
