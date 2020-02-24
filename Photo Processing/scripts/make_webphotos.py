@@ -199,6 +199,8 @@ def get_photo_data(conn, park, photo):
 		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, RDNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.ROADS_LN_evw
 		             union all
 		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat, Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
+		             union all
+                     SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, ASSETNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.AKR_ASSET_PT_evw
 					 )
 				 AS fc
                  ON fc.FACLOCID = p.FACLOCID OR fc.FACASSETID = p.FACASSETID OR fc.FEATUREID = p.FEATUREID OR fc.GEOMETRYID = p.GEOMETRYID
