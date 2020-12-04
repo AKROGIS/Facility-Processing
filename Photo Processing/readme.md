@@ -10,7 +10,7 @@ The PDS Data Manager should reference `Workflow.md` for instructions
 on processing new photos.
 
 Master copies of these documents are at:
-https://github.com/regan-sarwas/Building-QC/tree/master/Photo%20Processing
+https://github.com/AKROGIS/Facility-Processing/master/Photo%20Processing
 
 Photo List
 ==========
@@ -125,8 +125,14 @@ and the contents of `PhotoCSVLoader.csv`.  Any photo file in the `..\ORIGINAL`
 should be in either the geodatabase, or the csv file.  Editors of the CSV
 file are responsible for ensuring that their changes do not introduce errors.
 
+extras
+------
+Aditional scripts that are no longer required (part of the standard workflow)
+but could be useful in some situations.  See the `Readme.md` file in that
+folder for details on the scripts therein.
+
 scripts
 -------
-Additional scripts for processing photos.  See the readme file in that
+Additional scripts for processing photos.  See the `Readme.md` file in that
 folder for details.  These scripts will typically be run by the PDS
 Data Manager when updating the `akr_facility2` geodatabase and website.
