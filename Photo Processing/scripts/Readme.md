@@ -3,7 +3,7 @@ Scripts:
 This folder contains scripts for updating photo changes on our FMSS website.
 
 This folder was created by and is maintained by Regan Sarwas.
-Master copies of these scripts are at: https://github.com/regan-sarwas/Building-QC
+Master copies of these scripts are at: https://github.com/AKROGIS/Facility-Processing/blob/master/Photo Processing/scripts
 
 The scripts require the following support files
   * apply_orientation.py
