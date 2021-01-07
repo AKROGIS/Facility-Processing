@@ -10,7 +10,7 @@ The PDS Data Manager should reference `Workflow.md` for instructions
 on processing new photos.
 
 Master copies of these documents are at:
-https://github.com/AKROGIS/Facility-Processing/master/Photo%20Processing
+https://github.com/AKROGIS/Facility-Processing/tree/master/Photo%20Processing
 
 Photo List
 ==========
