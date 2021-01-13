@@ -61,13 +61,13 @@ using a TBD process.*
 9. Run `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py` to verify
    that the database matches the file system.
 9. Run `.\PROCESSING\scripts\make_webphotos.py` to create web sized photos
-   in `.\WEB` from the new photos in `ORIGINALS`
+   in `.\WEB` from the new photos in `.\ORIGINALS`.
 9. Run `.\PROCESSING\scripts\make_thumbnails.py` to create thumbnail photos
-   in `.\THUMB` from the new photos in `ORIGINALS`
+   in `.\THUMB` from the new photos in `.\ORIGINALS`.
 9. Run `.\PROCESSING\scripts\make_photos_json.py` to create an updated json
-   list of photos
+   list of photos.
 9. Run `.\PROCESSING\scripts\make_buildings_csv.py` to create an updated json
-   list of buildings
+   list of buildings.
 9. Run `.\PROCESSING\scripts\update_photos_on_server.bat` to copy the new CSV
    files and the photos in `.\WEB` and `.\THUMB` to the server
    (`\\akrgis.nps.gov\inetapps\fmss\photos`).

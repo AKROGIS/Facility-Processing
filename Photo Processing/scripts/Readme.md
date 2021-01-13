@@ -45,6 +45,7 @@ see script for details).
 
 **BUG:** Some changes in the database should update watermarking. This script
 is not smart enough to find these changes and update the watermarking.
+
 **WORKAROUND:** delete the web version of photos that should get updated
 watermarking before running this script.  You could clear the entire web folder,
 and a completely new set of web resolution photos will be created in about 10
