@@ -36,7 +36,7 @@ will create four results windows which need to be saved as `facilities.csv`,
   facilities in different feature classes is very flexible, but that makes it
   very complicated to combine all the possible combinations into a single list
   that can be easily used in a website.  This query helped test the various
-  combinations that were eventually used in `facilities.sql`
+  combinations that were eventually used in `facilities.sql`.
 
 See the [Facilities Website](https://github.com/AKROGIS/Facilities-Website)
 for details on how the products of these scripts are deployed to make the
@@ -60,8 +60,8 @@ Not really needed for the website, but here they are anyway :smile:.
 
 ### `Photo Processing`
 
-Tools for processing photo files into a list of describing new photos to be
-inserted into the database, and copied to the web server. It also has tools for
+Tools for processing photo files into a list of photos to be inserted into the
+database, and copied to the web server. It also has tools for
 creating the `photos.json` file that is deployed to the website and powers the
 photo part of the facilities website.  See the
 [Readme](./Photo%20Processing/readme.md)
