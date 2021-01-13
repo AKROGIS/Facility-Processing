@@ -1,5 +1,5 @@
-Photo workflow
-==============
+# Photo workflow
+
 All of the paths in this workflow are relative to the parent folder of this readme file,
 currently `T:\PROJECTS\AKR\FMSS\PHOTOS`.
 The scripts assume that they are in the folders described below and they use
@@ -9,11 +9,11 @@ still work.
 
 **NOTE:**
   *This process is **NOT** for geotagged photos (such as from a mobile device).
-   Those photos will go into the akr_facility2.AKR_ATTACH_PT feature class
+   Those photos will go into the `akr_facility2.AKR_ATTACH_PT` feature class
    using a TBD process.*
           
-Photo Providers
----------------
+## Photo Providers
+
   * This process is for photos that will be linked to a geographic feature in the
     `akr_facility2` database.  These photos can be linked to the items by `FACLOCID`,
     `FACASSETID`, `FEATUREID`, OR `GEOMETRYID`.
@@ -28,9 +28,8 @@ Photo Providers
   * Run the script `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py`
     and resolve any issues with missing or mis-named photo files before proceeding.
 
+## PDS Data Manager
 
-PDS Data Manager
-----------------
   1. Check for records in `.\PROCESSING\PhotoCSVLoader.csv`
      * If there are none, you are done.
   2. For any photo listed in `.\PROCESSING\PhotoCSVLoader.csv`
