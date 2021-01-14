@@ -1,4 +1,16 @@
-__author__ = "RESarwas"
+# -*- coding: utf-8 -*-
+
+"""
+Writes the list of photos found in the filesystem to a database table.
+
+File paths are hard coded in the script relative to the scipt's location.
+The database connection string and schema are also hardcoded in the script.
+
+Written for Python 2.7; may work with Python 3.x.
+"""
+
+from __future__ import print_function
+
 import sys
 import os
 
@@ -7,12 +19,16 @@ try:
 except ImportError:
     pyodbc = None
     pydir = os.path.dirname(sys.executable)
-    print "pyodbc module not found, make sure it is installed with"
-    print pydir + r"\Scripts\pip.exe install pyodbc"
-    print "Don" "t have pip?"
-    print "Download <https://bootstrap.pypa.io/get-pip.py> to " + pydir + r"\Scripts\get-pip.py"
-    print "Then run"
-    print sys.executable + " " + pydir + r"\Scripts\get-pip.py"
+    print("pyodbc module not found, make sure it is installed with")
+    print(pydir + r"\Scripts\pip.exe install pyodbc")
+    print("Don" "t have pip?")
+    print(
+        "Download <https://bootstrap.pypa.io/get-pip.py> to "
+        + pydir
+        + r"\Scripts\get-pip.py"
+    )
+    print("Then run")
+    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 
@@ -35,13 +51,13 @@ def get_connection_or_die():
         return connection
     except pyodbc.Error as e:
         # Additional alternatives are 'SQL Native Client' (2005) and 'SQL Server' (2000)
-        print ("Rats!!  Unable to connect to the database.")
-        print ("Make sure you have the SQL Server Client installed and")
-        print ("your AD account has the proper DB permissions.")
-        print ("Contact regan_sarwas@nps.gov for assistance.")
-        print ("  Connection: " + conn_string)
-        print ("         and: " + conn_string2)
-        print ("  Error: " + e[1])
+        print("Rats!!  Unable to connect to the database.")
+        print("Make sure you have the SQL Server Client installed and")
+        print("your AD account has the proper DB permissions.")
+        print("Contact regan_sarwas@nps.gov for assistance.")
+        print("  Connection: " + conn_string)
+        print("         and: " + conn_string2)
+        print("  Error: " + e[1])
         sys.exit()
 
 
@@ -112,7 +128,7 @@ def files_for_folders(root):
     """
     files = {}
     for folder in [f for f in os.listdir(root) if os.path.isdir(os.path.join(root, f))]:
-        print folder,
+        print(folder, end="")
         path = os.path.join(root, folder)
         files[folder] = [
             f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))

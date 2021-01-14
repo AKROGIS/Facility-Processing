@@ -1,10 +1,14 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-"""Creates a CSV list of photos (and select metadata) for all photos below a folder"""
+"""
+Creates a CSV list of photos (and select EXIF metadata) for all photos below a folder.
 
-__author__ = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
-__email__ = "regan_sarwas@nps.gov"
-__copyright__ = "Public Domain - product of the US Government"
+Absolute file paths are hard coded in the script.
+
+Written for Python 2.7; may work with Python 3.x.
+"""
+
+from __future__ import print_function
 
 import os
 import datetime

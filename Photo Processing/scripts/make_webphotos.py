@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 
-"""Creates and updates a collection of web photos (with annotation) for photos listed in a CSV
+"""
+Creates and updates a collection of web photos (with annotation) for photos listed in a CSV.
 
 It assumes that the photos are in the AKR_ATTACH table and they have a link to an
 FMSS feature for annotation details.
 
-author: Regan Sarwas, GIS Team, Alaska Region, National Park Service"
-email: regan_sarwas@nps.gov"
+File paths are hard coded in the script relative to the scipt's location.
+The database connection string and schema are also hardcoded in the script.
+
+Written for Python 2.7; may work with Python 3.x.
 """
+
+from __future__ import print_function
 
 import sys
 import os
@@ -17,12 +22,16 @@ try:
 except ImportError:
     pyodbc = None
     pydir = os.path.dirname(sys.executable)
-    print "pyodbc module not found, make sure it is installed with"
-    print pydir + r"\Scripts\pip.exe install pyodbc"
-    print "Don" "t have pip?"
-    print "Download <https://bootstrap.pypa.io/get-pip.py> to " + pydir + r"\Scripts\get-pip.py"
-    print "Then run"
-    print sys.executable + " " + pydir + r"\Scripts\get-pip.py"
+    print("pyodbc module not found, make sure it is installed with")
+    print(pydir + r"\Scripts\pip.exe install pyodbc")
+    print("Don" "t have pip?")
+    print(
+        "Download <https://bootstrap.pypa.io/get-pip.py> to "
+        + pydir
+        + r"\Scripts\get-pip.py"
+    )
+    print("Then run")
+    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 
@@ -31,12 +40,16 @@ try:
 except ImportError:
     Image, ImageDraw, ImageFont = None, None, None
     pydir = os.path.dirname(sys.executable)
-    print "PIL module not found, make sure it is installed with"
-    print pydir + r"\Scripts\pip.exe install Pillow"
-    print "Don" "t have pip?"
-    print "Download <https://bootstrap.pypa.io/get-pip.py> to " + pydir + r"\Scripts\get-pip.py"
-    print "Then run"
-    print sys.executable + " " + pydir + r"\Scripts\get-pip.py"
+    print("PIL module not found, make sure it is installed with")
+    print(pydir + r"\Scripts\pip.exe install Pillow")
+    print("Don" "t have pip?")
+    print(
+        "Download <https://bootstrap.pypa.io/get-pip.py> to "
+        + pydir
+        + r"\Scripts\get-pip.py"
+    )
+    print("Then run")
+    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 import apply_orientation  # dependency on PIL
@@ -60,10 +73,10 @@ def get_connection_or_die(server, db):
             return connection
         except pyodbc.Error:
             pass
-    print ("Rats!! Unable to connect to the database.")
-    print ("Make sure you have an ODBC driver installed for SQL Server")
-    print ("and your AD account has the proper DB permissions.")
-    print ("Contact regan_sarwas@nps.gov for assistance.")
+    print("Rats!! Unable to connect to the database.")
+    print("Make sure you have an ODBC driver installed for SQL Server")
+    print("and your AD account has the proper DB permissions.")
+    print("Contact regan_sarwas@nps.gov for assistance.")
     sys.exit()
 
 
@@ -194,8 +207,8 @@ def get_photo_data(conn, park, photo):
                FROM gis.AKR_ATTACH_evw as p
           LEFT JOIN (SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, BLDGNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.AKR_BLDG_CENTER_PT_evw
 		             union all
-		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, 
-                            CASE WHEN TRLFEATTYPE = 'Other' THEN TRLFEATTYPEOTHER ELSE TRLFEATTYPE END + 
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL,
+                            CASE WHEN TRLFEATTYPE = 'Other' THEN TRLFEATTYPEOTHER ELSE TRLFEATTYPE END +
                             CASE WHEN TRLFEATSUBTYPE is NULL THEN '' ELSE ', ' + TRLFEATSUBTYPE END AS [Name],
                             Shape.STY as lat, Shape.STX as lon from gis.TRAILS_FEATURE_PT_evw
 		             union all
@@ -220,7 +233,7 @@ def get_photo_data(conn, park, photo):
             .fetchone()
         )
     except pyodbc.Error as de:
-        print ("Database error ocurred", de)
+        print("Database error ocurred", de)
         row = None
     if row:
         return row.unit, row.tag, row.lat, row.lon, row.date, row.desc
@@ -232,14 +245,14 @@ def make_webphotos(base, config, conn):
     webdir = os.path.join(base, "WEB")
 
     if not os.path.exists(origdir):
-        print "Photo directory: " + origdir + " does not exit."
+        print("Photo directory: " + origdir + " does not exit.")
         return
 
     if not os.path.exists(webdir):
         os.mkdir(webdir)
 
     for park in folders(origdir):
-        print park,
+        print(park, end="")
         orig_park_path = os.path.join(origdir, park)
         new_park_path = os.path.join(webdir, park)
         if not os.path.exists(new_park_path):
@@ -258,9 +271,9 @@ def make_webphotos(base, config, conn):
                     im.thumbnail(config["size"], Image.ANTIALIAS)
                     annotate(im, data, config)
                     im.save(dest)
-                    print ".",
+                    print(".", end="")
                 except IOError:
-                    print "Cannot create thumbnail for", src
+                    print("Cannot create thumbnail for", src)
 
 
 if __name__ == "__main__":

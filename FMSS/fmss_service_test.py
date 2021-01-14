@@ -1,8 +1,16 @@
-# coding=utf8
-#  Tool to query FMSS SOAP based web services as of June 21, 2016
-# Note that the older REST service was retired.
-# The new SOAP services is still underdevelopment.
-#  Update to work as of June 4, 2018
+# -*- coding: utf-8 -*-
+
+"""
+Test queries to the FMSS SOAP based web services.
+
+Note: Worked with the older REST service as of June 21, 2016.
+The old webservice was retired.
+As of June 4, 2018, this worked with the new SOAP services (still underdevelopment)
+
+Written for Python 2.7; will NOT with Python 3.x.
+"""
+
+from __future__ import print_function
 
 import urllib2
 
@@ -83,4 +91,4 @@ request = urllib2.Request(url=endpoint,
                           data=encoded_query)
 
 response = urllib2.urlopen(request).read()
-print response
+print(response)

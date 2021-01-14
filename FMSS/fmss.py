@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+
+"""
+Creates a CSV file of facilities data for a SOAP request to the FMSS web service.
+
+File paths are hard coded in the script and relative to the current working directory.
+
+Written for Python 2.7; will NOT with Python 3.x.
+"""
+
+from __future__ import print_function
+
 import urllib2
 import json
 
@@ -135,8 +147,8 @@ def locations_page(park, page):
     try:
         f = urllib2.urlopen(location_url.format(sites[park], page))
     except urllib2.HTTPError:
-        print "Unable to retrieve Location page {0} for {1}.".format(page,
-                                                                     park)
+        print("Unable to retrieve Location page {0} for {1}.".format(page,
+                                                                     park))
         return False, []
 
     data = json.load(f)
@@ -190,9 +202,9 @@ def lshowone(park, filename=None):
                 item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                 cf.writerow(item)
     else:
-        print ",".join(loc_header)
+        print(",".join(loc_header))
         for item in locations(park):
-            print ",".join([my_str(x) for x in item])
+            print(",".join([my_str(x) for x in item]))
 
 
 def lshowall(filename=None):
@@ -207,10 +219,10 @@ def lshowall(filename=None):
                     item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                     cf.writerow(item)
     else:
-        print ",".join(loc_header)
+        print(",".join(loc_header))
         for park in sites:
             for item in locations(park):
-                print ",".join([my_str(x) for x in item])
+                print(",".join([my_str(x) for x in item]))
 
 
 def assets(park):
@@ -227,7 +239,7 @@ def assets_page(park, page):
     try:
         f = urllib2.urlopen(asset_url.format(sites[park], page))
     except urllib2.HTTPError:
-        print "Unable to retrieve Asset page {0} for {1}.".format(page, park)
+        print("Unable to retrieve Asset page {0} for {1}.".format(page, park))
         return False, []
 
     data = json.load(f)
@@ -235,7 +247,7 @@ def assets_page(park, page):
     # print data
     total_pages = data['TotalPages']
     current_page = data['Page']
-    print park, current_page, total_pages
+    print(park, current_page, total_pages)
     done = current_page >= total_pages
     data = asset_data(data['PagedList'], park)
     return done, data
@@ -281,9 +293,9 @@ def ashowone(park, filename=None):
                 item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                 cf.writerow(item)
     else:
-        print ",".join(asset_header)
+        print(",".join(asset_header))
         for item in assets(park):
-            print ",".join([my_str(x) for x in item])
+            print(",".join([my_str(x) for x in item]))
 
 
 def ashowall(filename=None):
@@ -298,10 +310,10 @@ def ashowall(filename=None):
                     item = [s.encode("utf-8") if isinstance(s, (str, unicode)) else s for s in item]
                     cf.writerow(item)
     else:
-        print ",".join(asset_header)
+        print(",".join(asset_header))
         for park in sites:
             for item in assets(park):
-                print ",".join([my_str(x) for x in item])
+                print(",".join([my_str(x) for x in item]))
 
 # lshowall('fmss.csv')
 # lshowone('AKRO')

@@ -1,8 +1,18 @@
-# coding=utf8
-#  Tool to query FMSS SOAP based web services as of June 21, 2016
-# Note that the older REST service was retired.
-# The new SOAP services is still underdevelopment.
-#  Update to work as of June 4, 2018
+# -*- coding: utf-8 -*-
+
+"""
+Tool to query FMSS SOAP based web services.
+
+Note: Worked with the older REST service as of June 21, 2016.
+The old webservice was retired.
+As of June 4, 2018, this worked with the new SOAP services (still underdevelopment)
+
+File paths are hard coded in the script and relative to the current working directory.
+
+Written for Python 2.7; will NOT with Python 3.x.
+"""
+
+from __future__ import print_function
 
 import sys
 import os
@@ -248,19 +258,19 @@ def build_csv(out_file):
             site_id = sites[site]
             for asset_code in asset_types:
                 data = [site, str(asset_code), asset_types[asset_code]]
-                print data
+                print(data)
                 response = location_query(site_id, str(asset_code))
                 convert_xml_to_csv(data, response, csv_writer)
 
 
 def module_missing(name):
-    print 'Module {0} not found, make sure it is installed.'.format(name)
+    print('Module {0} not found, make sure it is installed.'.format(name))
     exec_dir = os.path.split(sys.executable)[0]
     pip = os.path.join(exec_dir, 'Scripts', 'pip.exe')
     if not os.path.exists(pip):
-        print ("First install pip. See instructions at: "
+        print("First install pip. See instructions at: "
                "'https://pip.pypa.io/en/stable/installing/'.")
-    print 'Install with: {0} install {1}'.format(pip, name)
+    print('Install with: {0} install {1}'.format(pip, name))
     sys.exit()
 
 
@@ -342,7 +352,7 @@ def test_fill_table(connection, name):
     wcursor = connection.cursor()
     sql = u"insert into [{0}] ([FACLOCID], [description]) values ".format(name,)
     values = u"(93492,'{0}')".format(u'Résumé')
-    print sql + values
+    print(sql + values)
     wcursor.execute(sql + values)
     try:
         wcursor.commit()
@@ -357,7 +367,7 @@ def fill_table(connection, name):
         site_id = sites[site]
         for asset_code in asset_types:  # in [4100]:
             data = [site, str(asset_code), asset_types[asset_code]]
-            print data
+            print(data)
             response = location_query(site_id, str(asset_code))
             rows = convert_xml_to_rows(data, response)
 
@@ -417,10 +427,7 @@ def update_db():
             pass
 
 
-print test_service2()
+print(test_service2())
 # test_csv('out.csv')
 # build_csv('out.csv')
 # update_db()
-
-
-

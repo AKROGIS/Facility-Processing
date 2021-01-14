@@ -1,10 +1,15 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-"""Get the list of photos for each FMSS ID and save it as a JSON object"""
+"""
+Create a photos.json file which lists each photo in the database with a URL and foreign key.
 
-__author__ = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
-__email__ = "regan_sarwas@nps.gov"
-__copyright__ = "Public Domain - product of the US Government"
+File paths are hard coded in the script relative to the scipt's location.
+The database connection string and schema are also hardcoded in the script.
+
+Written for Python 2.7; may work with Python 3.x.
+"""
+
+from __future__ import print_function
 
 import sys
 import os.path
@@ -15,12 +20,16 @@ try:
 except ImportError:
     pyodbc = None
     pydir = os.path.dirname(sys.executable)
-    print "pyodbc module not found, make sure it is installed with"
-    print pydir + r"\Scripts\pip.exe install pyodbc"
-    print "Don" "t have pip?"
-    print "Download <https://bootstrap.pypa.io/get-pip.py> to " + pydir + r"\Scripts\get-pip.py"
-    print "Then run"
-    print sys.executable + " " + pydir + r"\Scripts\get-pip.py"
+    print("pyodbc module not found, make sure it is installed with")
+    print(pydir + r"\Scripts\pip.exe install pyodbc")
+    print("Don" "t have pip?")
+    print(
+        "Download <https://bootstrap.pypa.io/get-pip.py> to "
+        + pydir
+        + r"\Scripts\get-pip.py"
+    )
+    print("Then run")
+    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 
@@ -43,13 +52,13 @@ def get_connection_or_die():
         return connection
     except pyodbc.Error as e:
         # Additional alternatives are 'SQL Native Client' (2005) and 'SQL Server' (2000)
-        print ("Rats!!  Unable to connect to the database.")
-        print ("Make sure you have the SQL Server Client installed and")
-        print ("your AD account has the proper DB permissions.")
-        print ("Contact regan_sarwas@nps.gov for assistance.")
-        print ("  Connection: " + conn_string)
-        print ("         and: " + conn_string2)
-        print ("  Error: " + e[1])
+        print("Rats!!  Unable to connect to the database.")
+        print("Make sure you have the SQL Server Client installed and")
+        print("your AD account has the proper DB permissions.")
+        print("Contact regan_sarwas@nps.gov for assistance.")
+        print("  Connection: " + conn_string)
+        print("         and: " + conn_string2)
+        print("  Error: " + e[1])
         sys.exit()
 
 
@@ -72,7 +81,7 @@ def get_photo_data(connection):
             .fetchall()
         )
     except pyodbc.Error as de:
-        print ("Database error ocurred", de)
+        print("Database error ocurred", de)
         rows = None
     if rows:
         for row in rows:

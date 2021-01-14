@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+
+"""
+Looks for all files in a CSV file that are not in the filesystem.
+
+File paths are hard coded in the script and relative to the current working directory.
+
+Written for Python 2.7; may work with Python 3.x.
+"""
+
+from __future__ import print_function
+
 import csv
 import os.path
 
@@ -12,7 +24,7 @@ with open(r"T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\PhotoCSVLoader.csv") as f:
         name = row[1]
         folder = row[6]
         if not name or not folder:
-            print "Bad record at line", i
+            print("Bad record at line", i)
             continue
         # path = os.path.join(r'T:\PROJECTS\AKR\FMSS\PHOTOS\ORIGINAL', name)
         path = os.path.join(folder, name)
@@ -21,4 +33,4 @@ with open(r"T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\PhotoCSVLoader.csv") as f:
             items.append((path, i))
 
 for path, i in sorted(items):
-    print "Path not found at line", i, path
+    print("Path not found at line", i, path)

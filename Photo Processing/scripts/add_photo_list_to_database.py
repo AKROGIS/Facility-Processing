@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Add the photos in the CSV list (PhotoCSVLoader.csv) to the facilities database.
 
@@ -10,7 +12,14 @@ EXEC sde.create_version 'sde.DEFAULT', 'photo_update_20181211', 1, 2, 'For auto 
 Database error:
 EXEC dbo.Calc_Attachments 'DBO.photo_update_20181211';
 ('25000', u'[25000] [Microsoft][ODBC Driver 13 for SQL Server][SQL Server]Transaction count after EXECUTE indicates a mismatching number of BEGIN and COMMIT statements. Previous count = 1, current count = 0. (266) (SQLExecDirectW); [25000] [Microsoft][ODBC Driver 13 for SQL Server][SQL Server]Transaction count after EXECUTE indicates a mismatching number of BEGIN and COMMIT statements. Previous count = 1, current count = 0. (266)')
+
+File paths are hard coded in the script relative to the scipt's location.
+The database connection string and schema are also hardcoded in the script.
+
+Written for Python 2.7; may work with Python 3.x.
 """
+
+from __future__ import print_function
 
 import datetime
 import os
@@ -21,12 +30,16 @@ try:
 except ImportError:
     pyodbc = None
     pydir = os.path.dirname(sys.executable)
-    print "pyodbc module not found, make sure it is installed with"
-    print pydir + r"\Scripts\pip.exe install pyodbc"
-    print "Don" "t have pip?"
-    print "Download <https://bootstrap.pypa.io/get-pip.py> to " + pydir + r"\Scripts\get-pip.py"
-    print "Then run"
-    print sys.executable + " " + pydir + r"\Scripts\get-pip.py"
+    print("pyodbc module not found, make sure it is installed with")
+    print(pydir + r"\Scripts\pip.exe install pyodbc")
+    print("Don" "t have pip?")
+    print(
+        "Download <https://bootstrap.pypa.io/get-pip.py> to "
+        + pydir
+        + r"\Scripts\get-pip.py"
+    )
+    print("Then run")
+    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 
@@ -48,10 +61,10 @@ def get_connection_or_die(server, db):
             return connection
         except pyodbc.Error:
             pass
-    print ("Rats!! Unable to connect to the database.")
-    print ("Make sure you have an ODBC driver installed for SQL Server")
-    print ("and your AD account has the proper DB permissions.")
-    print ("Contact regan_sarwas@nps.gov for assistance.")
+    print("Rats!! Unable to connect to the database.")
+    print("Make sure you have an ODBC driver installed for SQL Server")
+    print("and your AD account has the proper DB permissions.")
+    print("Contact regan_sarwas@nps.gov for assistance.")
     sys.exit()
 
 
@@ -106,12 +119,12 @@ def make_new_version(conn):
         )
     except pyodbc.Error as de:
         err = "Database error:\n" + str(sql) + "\n" + str(de)
-        print (err)
+        print(err)
     if row and len(row) == 2:
         return "{0}.{1}".format(*row)
     else:
-        print ("Unexpected database response to query for version name")
-        print (row)
+        print("Unexpected database response to query for version name")
+        print(row)
     return None
 
 
@@ -151,7 +164,7 @@ def write_photos(connection, version, photos):
             wcursor.execute(sql)
     except pyodbc.Error as de:
         err = "Database error:\n" + str(sql) + "\n" + str(de)
-        print (err)
+        print(err)
         return err
     return None
 
@@ -162,7 +175,7 @@ def execute_sql(connection, sql):
             wcursor.execute(sql)
     except pyodbc.Error as de:
         err = "Database error:\n" + str(sql) + "\n" + str(de)
-        print (err)
+        print(err)
         return err
     return None
 
@@ -175,10 +188,10 @@ if __name__ == "__main__":
     photo_list_file = os.path.join(script_dir, "PhotoCSVLoader.csv")
     new_photos = read_csv(photo_list_file)
     if not new_photos:
-        print ("There are no photos to add")
+        print("There are no photos to add")
         sys.exit()
     if len(new_photos[0]) != 13:
-        print ("There are the wrong number of columns in the Photos CSV")
+        print("There are the wrong number of columns in the Photos CSV")
         sys.exit()
     conn = get_connection_or_die("inpakrovmais", "akr_facility2")
     version = make_new_version(conn)

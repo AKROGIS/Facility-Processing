@@ -1,11 +1,15 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-"""Creates and updates a collection of thumbnails for photos listed in a CSV"""
+"""
+Creates and updates a collection of thumbnails for photos listed in a CSV.
 
-__author__ = "Regan Sarwas, GIS Team, Alaska Region, National Park Service"
-__email__ = "regan_sarwas@nps.gov"
-__copyright__ = "Public Domain - product of the US Government"
+File paths are hard coded in the script relative to the scipt's location.
+The database connection string and schema are also hardcoded in the script.
 
+Written for Python 2.7; may work with Python 3.x.
+"""
+
+from __future__ import print_function
 
 import sys
 import os
@@ -15,12 +19,16 @@ try:
 except ImportError:
     Image = None
     pydir = os.path.dirname(sys.executable)
-    print "PIL module not found, make sure it is installed with"
-    print pydir + r"\Scripts\pip.exe install Pillow"
-    print "Don" "t have pip?"
-    print "Download <https://bootstrap.pypa.io/get-pip.py> to " + pydir + r"\Scripts\get-pip.py"
-    print "Then run"
-    print sys.executable + " " + pydir + r"\Scripts\get-pip.py"
+    print("PIL module not found, make sure it is installed with")
+    print(pydir + r"\Scripts\pip.exe install Pillow")
+    print("Don" "t have pip?")
+    print(
+        "Download <https://bootstrap.pypa.io/get-pip.py> to "
+        + pydir
+        + r"\Scripts\get-pip.py"
+    )
+    print("Then run")
+    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 import apply_orientation  # dependency on PIL
@@ -56,14 +64,14 @@ def make_thumbs(base, size):
     thumbdir = os.path.join(base, "THUMB")
 
     if not os.path.exists(origdir):
-        print "Photo directory: " + origdir + " does not exit."
+        print("Photo directory: " + origdir + " does not exit.")
         return
 
     if not os.path.exists(thumbdir):
         os.mkdir(thumbdir)
 
     for park in folders(origdir):
-        print park,
+        print(park, end="")
         orig_park_path = os.path.join(origdir, park)
         new_park_path = os.path.join(thumbdir, park)
         if not os.path.exists(new_park_path):
@@ -80,9 +88,9 @@ def make_thumbs(base, size):
                     im = apply_orientation.apply_orientation(im)
                     im.thumbnail(size, Image.ANTIALIAS)
                     im.save(dest)
-                    print ".",
+                    print(".", end="")
                 except IOError:
-                    print "Cannot create thumbnail for", src
+                    print("Cannot create thumbnail for", src)
 
 
 if __name__ == "__main__":

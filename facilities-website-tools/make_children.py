@@ -1,8 +1,16 @@
+# -*- coding: utf-8 -*-
+
 """
-Converts CSV data from a database dump into json files that
-the web app can load without manipulation
-See facilities.sql for how to create the various input files
+Converts CSV data from the database into JSON files that the web app can load.
+
+See `facilities.sql` for how to create the various input files.
+File paths are hard coded in the script relative to the current working directory.
+
+Written for Python 2.7; may work with Python 3.x.
 """
+
+from __future__ import print_function
+
 import csv
 import collections
 import json
