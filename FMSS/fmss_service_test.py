@@ -15,7 +15,6 @@ from __future__ import print_function
 import urllib2
 
 
-
 endpoint1 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISLOCQ"
 query1 = u"""
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
@@ -29,7 +28,9 @@ query1 = u"""
       </max:FMSSGISLOCQuery>
     </max:QueryFMSSGISLOC>
   </soapenv:Body>
-</soapenv:Envelope>""".format(lo2='4100', siteid='P117')
+</soapenv:Envelope>""".format(
+    lo2="4100", siteid="P117"
+)
 
 endpoint2 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISFRPPQ"
 query2 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
@@ -43,7 +44,9 @@ query2 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/en
       </max:FMSSGISFRPPQuery>
     </max:QueryFMSSGISFRPP>
   </soapenv:Body>
-</soapenv:Envelope>""".format(frpp='1')
+</soapenv:Envelope>""".format(
+    frpp="1"
+)
 
 endpoint3 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISASSETQ"
 query3 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
@@ -59,7 +62,9 @@ query3 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/en
       </max:FMSSGISASSETQuery>
     </max:QueryFMSSGISASSET>
   </soapenv:Body>
-</soapenv:Envelope>""".format(lo2='4100', siteid='P117', loc='43743')
+</soapenv:Envelope>""".format(
+    lo2="4100", siteid="P117", loc="43743"
+)
 
 endpoint4 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISWOQ"
 query4 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
@@ -75,20 +80,22 @@ query4 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/en
       </max:FMSSGISWOQuery>
     </max:QueryFMSSGISWO>
   </soapenv:Body>
-</soapenv:Envelope>""".format(lo2='4100', siteid='P117', loc='43743')
+</soapenv:Envelope>""".format(
+    lo2="4100", siteid="P117", loc="43743"
+)
 
 
-encoded_query = query3.encode('utf-8')
+encoded_query = query3.encode("utf-8")
 endpoint = endpoint3
 
 
 # SOAP 1.1 Header
-headers = {"Content-Type": 'text/xml; charset="utf-8"',
-           "Content-Length": str(len(encoded_query))}
+headers = {
+    "Content-Type": 'text/xml; charset="utf-8"',
+    "Content-Length": str(len(encoded_query)),
+}
 
-request = urllib2.Request(url=endpoint,
-                          headers=headers,
-                          data=encoded_query)
+request = urllib2.Request(url=endpoint, headers=headers, data=encoded_query)
 
 response = urllib2.urlopen(request).read()
 print(response)
