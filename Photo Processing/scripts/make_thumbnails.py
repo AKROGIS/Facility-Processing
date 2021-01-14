@@ -15,12 +15,12 @@ try:
 except ImportError:
     Image = None
     pydir = os.path.dirname(sys.executable)
-    print 'PIL module not found, make sure it is installed with'
-    print pydir + r'\Scripts\pip.exe install Pillow'
-    print 'Don''t have pip?'
-    print 'Download <https://bootstrap.pypa.io/get-pip.py> to ' + pydir + r'\Scripts\get-pip.py'
-    print 'Then run'
-    print sys.executable + ' ' + pydir + r'\Scripts\get-pip.py'
+    print "PIL module not found, make sure it is installed with"
+    print pydir + r"\Scripts\pip.exe install Pillow"
+    print "Don" "t have pip?"
+    print "Download <https://bootstrap.pypa.io/get-pip.py> to " + pydir + r"\Scripts\get-pip.py"
+    print "Then run"
+    print sys.executable + " " + pydir + r"\Scripts\get-pip.py"
     sys.exit()
 
 import apply_orientation  # dependency on PIL
@@ -30,7 +30,7 @@ def is_jpeg(path):
     if not os.path.isfile(path):
         return False
     ext = os.path.splitext(path)[1].lower()
-    return ext in ['.jpg', '.jpeg']
+    return ext in [".jpg", ".jpeg"]
 
 
 def parks(parent):
@@ -38,12 +38,12 @@ def parks(parent):
 
 
 def folders(start_dir):
-    start_dir = start_dir + '\\'
+    start_dir = start_dir + "\\"
     results = []
     for root, dirs, files in os.walk(start_dir):
-        relative_path = root.replace(start_dir, '')
+        relative_path = root.replace(start_dir, "")
         for d in dirs:
-                results.append(os.path.join(relative_path, d))
+            results.append(os.path.join(relative_path, d))
     return results
 
 
@@ -53,7 +53,7 @@ def photos(parkdir):
 
 def make_thumbs(base, size):
     origdir = os.path.join(base, "ORIGINAL")
-    thumbdir = os.path.join(base,  "THUMB")
+    thumbdir = os.path.join(base, "THUMB")
 
     if not os.path.exists(origdir):
         print "Photo directory: " + origdir + " does not exit."
@@ -71,18 +71,21 @@ def make_thumbs(base, size):
         for photo in photos(orig_park_path):
             src = os.path.join(orig_park_path, photo)
             dest = os.path.join(new_park_path, photo)
-            if os.path.exists(src) and (not os.path.exists(dest) or os.path.getmtime(dest) < os.path.getmtime(dest)):
+            if os.path.exists(src) and (
+                not os.path.exists(dest)
+                or os.path.getmtime(dest) < os.path.getmtime(dest)
+            ):
                 try:
                     im = Image.open(src)
                     im = apply_orientation.apply_orientation(im)
                     im.thumbnail(size, Image.ANTIALIAS)
                     im.save(dest)
-                    print '.',
+                    print ".",
                 except IOError:
                     print "Cannot create thumbnail for", src
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # Assumes script is in a sub folder of the Processing folder which is sub to the photos base folder.
     base_dir = os.path.dirname(os.path.dirname(script_dir))

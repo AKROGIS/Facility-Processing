@@ -3,7 +3,7 @@ import os.path
 
 i = 0
 items = []
-with open(r'T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\PhotoCSVLoader.csv') as f:
+with open(r"T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\PhotoCSVLoader.csv") as f:
     csv_reader = csv.reader(f)
     for row in csv_reader:
         i += 1
