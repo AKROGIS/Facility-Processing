@@ -89,7 +89,7 @@ def files_for_folders(root):
     """
     files = {}
     for folder in [f for f in os.listdir(root) if os.path.isdir(os.path.join(root, f))]:
-        print(folder)
+        print(folder, end=" ")
         path = os.path.join(root, folder)
         files[folder] = [
             f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))
@@ -117,7 +117,7 @@ def photos_below(dir):
     results = []
     for root, dirs, files in os.walk(dir):
         relative_path = root.replace(dir, "")
-        print(relative_path)
+        print(relative_path, end=" ")
         for filename in files:
             if is_image(filename):
                 results.append(os.path.join(relative_path, filename))
