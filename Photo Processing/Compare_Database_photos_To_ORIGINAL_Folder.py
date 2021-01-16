@@ -6,7 +6,7 @@ Compares the list of photos in database + CSV file with the filesystem.
 File paths are hard coded in the script relative to the scipt's location.
 The database connection string and schema are also hardcoded in the script.
 
-Written for Python 2.7; may work with Python 3.x.
+Written for Python 2.7 and 3.6.
 """
 
 from __future__ import print_function
@@ -21,14 +21,6 @@ except ImportError:
     pydir = os.path.dirname(sys.executable)
     print("pyodbc module not found, make sure it is installed with")
     print(pydir + r"\Scripts\pip.exe install pyodbc")
-    print("Don" "t have pip?")
-    print(
-        "Download <https://bootstrap.pypa.io/get-pip.py> to "
-        + pydir
-        + r"\Scripts\get-pip.py"
-    )
-    print("Then run")
-    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 
@@ -54,7 +46,7 @@ def get_connection_or_die():
         print("Rats!!  Unable to connect to the database.")
         print("Make sure you have the SQL Server Client installed and")
         print("your AD account has the proper DB permissions.")
-        print("Contact regan_sarwas@nps.gov for assistance.")
+        print("Contact akro_gis_helpdesk@nps.gov for assistance.")
         print("  Connection: " + conn_string)
         print("         and: " + conn_string2)
         print("  Error: " + e[1])
