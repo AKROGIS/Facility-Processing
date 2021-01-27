@@ -10,7 +10,7 @@ As of June 4, 2018, this worked with the new SOAP services (still underdevelopme
 Written for Python 2.7; will NOT with Python 3.x.
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import urllib2
 

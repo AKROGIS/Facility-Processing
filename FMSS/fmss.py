@@ -8,10 +8,10 @@ File paths are hard coded in the script and relative to the current working dire
 Written for Python 2.7; will NOT with Python 3.x.
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import urllib2
 import json
+import urllib2
 
 # These URLs return JSON
 location_url = "http://inpniscvnpunit2/fmss/api/locations?siteid={0}&page={1}"

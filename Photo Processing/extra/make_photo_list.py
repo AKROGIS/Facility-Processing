@@ -8,10 +8,11 @@ Absolute file paths are hard coded in the script.
 Written for Python 2.7; may work with Python 3.x.
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
 import datetime
+import os
+
 import exifread  # https://pypi.python.org/pypi/ExifRead
 
 # C:\Python27\ArcGIS10.5\Scripts\pip.exe --cert "C:\users\resarwas\DOIRootCA.crt" install exifread
@@ -56,9 +57,9 @@ with open(csv, "w") as f:
                     tags = exifread.process_file(pf, details=False)
                     try:
                         dms = tags["GPS GPSLatitude"].values
-                        deg = float(dms[0].num) / dms[0].den
-                        minute = float(dms[1].num) / dms[1].den
-                        sec = float(dms[2].num) / dms[2].den
+                        deg = dms[0].num / dms[0].den
+                        minute = dms[1].num / dms[1].den
+                        sec = dms[2].num / dms[2].den
                         if tags["GPS GPSLatitudeRef"].values == "N":
                             sign = 1
                         else:
@@ -72,9 +73,9 @@ with open(csv, "w") as f:
                         pass
                     try:
                         dms = tags["GPS GPSLongitude"].values
-                        deg = float(dms[0].num) / dms[0].den
-                        minute = float(dms[1].num) / dms[1].den
-                        sec = float(dms[2].num) / dms[2].den
+                        deg = dms[0].num / dms[0].den
+                        minute = dms[1].num / dms[1].den
+                        sec = dms[2].num / dms[2].den
                         if tags["GPS GPSLongitudeRef"].values == "E":
                             sign = 1
                         else:
@@ -104,7 +105,7 @@ with open(csv, "w") as f:
                                 date.replace(":", "-"),
                                 time[0],
                                 time[1],
-                                float(time[2].num) / time[2].den,
+                                time[2].num / time[2].den,
                             )
                         else:
                             gpsdate = ""

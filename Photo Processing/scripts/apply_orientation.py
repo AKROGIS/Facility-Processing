@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+
+"""
+Rotates an image to normalize it based on the EXIF rotation tag
+
+Written for Python 2.7; may work with Python 3.x.
+"""
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 from PIL import Image
 
 

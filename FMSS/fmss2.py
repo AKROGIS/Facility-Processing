@@ -12,13 +12,13 @@ File paths are hard coded in the script and relative to the current working dire
 Written for Python 2.7; will NOT with Python 3.x.
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
+import csv
 import os
+import sys
 import urllib2
 import xml.etree.ElementTree as eT
-import csv
 
 
 def location_query(site_id, asset_code):

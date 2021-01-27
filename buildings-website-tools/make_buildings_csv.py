@@ -9,11 +9,12 @@ The database connection string and schema are also hardcoded in the script.
 Written for Python 2.7; will NOT work with Python 3.x.
 """
 
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-import os.path
 import csv
+import os.path
+import sys
+
 
 # dependency pyodbc
 # pip install pyodbc
