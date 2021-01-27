@@ -26,14 +26,6 @@ except ImportError:
     pydir = os.path.dirname(sys.executable)
     print("pyodbc module not found, make sure it is installed with")
     print(pydir + r"\Scripts\pip.exe install pyodbc")
-    print("Don" "t have pip?")
-    print(
-        "Download <https://bootstrap.pypa.io/get-pip.py> to "
-        + pydir
-        + r"\Scripts\get-pip.py"
-    )
-    print("Then run")
-    print(sys.executable + " " + pydir + r"\Scripts\get-pip.py")
     sys.exit()
 
 
