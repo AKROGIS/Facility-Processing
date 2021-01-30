@@ -11,6 +11,7 @@ Written for Python 2.7; may work with Python 3.x.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import datetime
+from io import open
 import os
 
 import exifread  # https://pypi.python.org/pypi/ExifRead
@@ -23,7 +24,7 @@ root = r"T:\PROJECTS\AKR\FMSS\Photos\Original"
 # csv = os.path.join(root, "PhotoList.csv")
 csv = r"C:\tmp\PhotoList.csv"
 
-with open(csv, "w") as f:
+with open(csv, "w", encoding="utf-8") as f:
     f.write("folder,photo,id,namedate,exifdate,lat,lon,gpsdate,size,filedate\n")
     for root, dirs, files in os.walk(root):
         folder = os.path.basename(root)
@@ -54,6 +55,7 @@ with open(csv, "w") as f:
                 size = os.path.getsize(path)
                 lat, lon, exifdate, gpsdate = "", "", "", ""
                 with open(path, "rb") as pf:
+                    # exifread wants binary data
                     tags = exifread.process_file(pf, details=False)
                     try:
                         dms = tags["GPS GPSLatitude"].values

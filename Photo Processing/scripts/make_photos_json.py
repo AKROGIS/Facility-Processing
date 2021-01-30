@@ -11,6 +11,7 @@ Written for Python 2.7; may work with Python 3.x.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from io import open
 import json
 import os.path
 import sys
@@ -90,5 +91,5 @@ if __name__ == "__main__":
     outfile = os.path.join(script_dir, "photos.json")
     conn = get_connection_or_die()
     data = get_photo_data(conn)
-    with open(outfile, "w") as fh:
+    with open(outfile, "w", encoding="utf-8") as fh:
         fh.write(json.dumps(data, indent=2, separators=(",", ": ")))

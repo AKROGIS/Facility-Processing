@@ -13,6 +13,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import collections
 import csv
+from io import open
 import json
 
 
@@ -40,7 +41,7 @@ def main():
                 children[parent] = []
             children[parent].append(child)
 
-    with open("children.json", "w") as json_fh:
+    with open("children.json", "w", encoding="utf-8") as json_fh:
         json_fh.write(
             json.dumps(children, sort_keys=True, indent=2, separators=(",", ":"))
         )
@@ -56,7 +57,7 @@ def main():
                 assets[parent] = []
             assets[parent].append(child)
 
-    with open("assets.json", "w") as json_fh:
+    with open("assets.json", "w", encoding="utf-8") as json_fh:
         json_fh.write(
             json.dumps(assets, sort_keys=True, indent=2, separators=(",", ":"))
         )
