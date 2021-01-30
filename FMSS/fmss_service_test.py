@@ -16,7 +16,7 @@ import urllib2
 
 
 endpoint1 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISLOCQ"
-query1 = u"""
+query1 = """
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Body>
     <max:QueryFMSSGISLOC xmlns:max="http://www.ibm.com/maximo">
@@ -33,7 +33,7 @@ query1 = u"""
 )
 
 endpoint2 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISFRPPQ"
-query2 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+query2 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header/>
   <soapenv:Body>
     <max:QueryFMSSGISFRPP xmlns:max="http://www.ibm.com/maximo">
@@ -49,7 +49,7 @@ query2 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/en
 )
 
 endpoint3 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISASSETQ"
-query3 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+query3 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header/>
   <soapenv:Body>
     <max:QueryFMSSGISASSET xmlns:max="http://www.ibm.com/maximo">
@@ -67,7 +67,7 @@ query3 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/en
 )
 
 endpoint4 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISWOQ"
-query4 = u"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+query4 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header/>
   <soapenv:Body>
     <max:QueryFMSSGISWO xmlns:max="http://www.ibm.com/maximo">

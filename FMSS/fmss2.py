@@ -26,7 +26,7 @@ def location_query(site_id, asset_code):
     # action = '"urn:processDocument"'
     endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISLOCQ"
 
-    query = u"""<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+    query = """<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
       <soapenv:Header/>
       <soapenv:Body>
         <max:QueryFMSSGISLOC xmlns:max="http://www.ibm.com/maximo">
@@ -66,7 +66,7 @@ def location_query(site_id, asset_code):
 def frpp_query(location_id):
     endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISFRPPQ"
 
-    query = u"""<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+    query = """<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
       <soapenv:Header/>
       <soapenv:Body>
         <int:FMSSGISFRPPQ xmlns:int="http://www.ibm.com/maximo">
@@ -99,7 +99,7 @@ def frpp_query(location_id):
 def asset_query(site_id, asset_code):
     endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISASSETQ"
 
-    query = u"""<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+    query = """<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
       <soapenv:Header/>
       <soapenv:Body>
         <max:QueryFMSSGISLOC xmlns:max="http://www.mro.com/mx/integration">
@@ -229,7 +229,7 @@ asset_types = {
 def location_to_rows(data, location):
     # noinspection PyUnresolvedReferences
     attributes = [
-        elem.text if elem is not None else u""
+        elem.text if elem is not None else ""
         for elem in [location.find(tag) for tag in ns_tags]
     ]
     try:
@@ -251,7 +251,7 @@ def convert_xml_to_csv(data, response, csv_writer):
     for row in rows:
         utf8_row = [
             u.encode("utf-8")
-            for u in [unicode(n) if n is not None else u"" for n in row]
+            for u in [unicode(n) if n is not None else "" for n in row]
         ]
         csv_writer.writerow(utf8_row)
 
@@ -373,19 +373,19 @@ def delete_table(connection, name):
 
 
 def escape_single_quote(s):
-    return s.replace(u"'", u"''")
+    return s.replace("'", "''")
 
 
 def sql_clean(row):
-    return [escape_single_quote(n) if n is not None else u"NULL" for n in row]
+    return [escape_single_quote(n) if n is not None else "NULL" for n in row]
 
 
 def test_fill_table(connection, name):
     wcursor = connection.cursor()
-    sql = u"insert into [{0}] ([FACLOCID], [description]) values ".format(
+    sql = "insert into [{0}] ([FACLOCID], [description]) values ".format(
         name,
     )
-    values = u"(93492,'{0}')".format(u"Résumé")
+    values = "(93492,'{0}')".format("Résumé")
     print(sql + values)
     wcursor.execute(sql + values)
     try:
@@ -396,7 +396,7 @@ def test_fill_table(connection, name):
 
 def fill_table(connection, name):
     wcursor = connection.cursor()
-    sql = u"insert into [{0}] ({1}) values ".format(name, ",".join(table_column_names))
+    sql = "insert into [{0}] ({1}) values ".format(name, ",".join(table_column_names))
     for site in sites:  # in ['ANIA']:
         site_id = sites[site]
         for asset_code in asset_types:  # in [4100]:
@@ -407,11 +407,11 @@ def fill_table(connection, name):
 
             # SQL Server is limited to 1000 rows in an insert
             for chunk in chunks(rows, 999):
-                values = u",".join(
+                values = ",".join(
                     [
                         (
-                            u"('{0}',{1},'{2}','{3}','{4}','{5}','{6}',{7},{8},{9},"
-                            u"{10},'{11}','{12}',{13})"
+                            "('{0}',{1},'{2}','{3}','{4}','{5}','{6}',{7},{8},{9},"
+                            "{10},'{11}','{12}',{13})"
                         ).format(*sql_clean(row))
                         for row in chunk
                     ]

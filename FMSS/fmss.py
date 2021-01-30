@@ -19,44 +19,44 @@ asset_url = "http://inpniscvnpunit2/fmss/api/assets?siteid={0}&page={1}"
 
 # Response is JSON, converted to Python it looks like (as of July 20115):
 response = {
-    u"TotalItems": 2,
-    u"TotalPages": 1,
-    u"PagedList": ["item1", "item2", "..."],
-    u"Page": 1,
-    u"PageSize": 25,
+    "TotalItems": 2,
+    "TotalPages": 1,
+    "PagedList": ["item1", "item2", "..."],
+    "Page": 1,
+    "PageSize": 25,
 }
 
 # example item in PagedList
 example = {
-    u"LOCATIONSID": 5128917331L,
-    u"STATUS": {u"maxvalue": u"OPERATING", u"Value": u"OPERATING"},
-    u"SOURCESYSID": u"",
-    u"DESCRIPTION": u"ANM Alaska Packers Historic Site & Access Area",
-    u"LO11": u"AC",
-    u"LO6": 37978.81,
-    u"CHANGEBY": u"RSHERMAN",
-    u"LO2": u"3100",
-    u"LOCHIERARCHY": {
-        u"ORGID": u"NPS",
-        u"LOCHIERARCHYID": 1517752492,
-        u"SYSTEMID": u"PRIMARY",
-        u"PARENT": u"ANIA",
+    "LOCATIONSID": 5128917331L,
+    "STATUS": {"maxvalue": "OPERATING", "Value": "OPERATING"},
+    "SOURCESYSID": "",
+    "DESCRIPTION": "ANM Alaska Packers Historic Site & Access Area",
+    "LO11": "AC",
+    "LO6": 37978.81,
+    "CHANGEBY": "RSHERMAN",
+    "LO2": "3100",
+    "LOCHIERARCHY": {
+        "ORGID": "NPS",
+        "LOCHIERARCHYID": 1517752492,
+        "SYSTEMID": "PRIMARY",
+        "PARENT": "ANIA",
     },
-    u"SITEID": u"P117",
-    u"LOCATION": u"95774",
-    u"SITE": {u"SITEUID": u"1005", u"PARKALPHA": u"ANIA"},
-    u"LO5": 58,
-    u"ORGID": u"NPS",
-    u"LO14": u"",
-    u"LO9": 3123.6,
-    u"LOCOPER": {
-        u"FLO3": u"4",
-        u"SHIFTNUM": u"",
-        u"LOCOPERID": 3059260311L,
-        u"WARRANTYEXPDATE": None,
+    "SITEID": "P117",
+    "LOCATION": "95774",
+    "SITE": {"SITEUID": "1005", "PARKALPHA": "ANIA"},
+    "LO5": 58,
+    "ORGID": "NPS",
+    "LO14": "",
+    "LO9": 3123.6,
+    "LOCOPER": {
+        "FLO3": "4",
+        "SHIFTNUM": "",
+        "LOCOPERID": 3059260311L,
+        "WARRANTYEXPDATE": None,
     },
-    u"CHANGEDATE": u"2014-02-14T12:24:44-07:00",
-    u"LO7": 0.082,
+    "CHANGEDATE": "2014-02-14T12:24:44-07:00",
+    "LO7": 0.082,
 }
 
 # Map of common names for keys in example

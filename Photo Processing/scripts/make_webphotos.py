@@ -96,7 +96,7 @@ def latlonstr(lat, lon):
     else:
         londir = "E"
 
-    return u"{0} {1}°  {2} {3}°".format(latdir, latstr, londir, lonstr)
+    return "{0} {1}°  {2} {3}°".format(latdir, latstr, londir, lonstr)
 
 
 def annotate(image, data, config):
