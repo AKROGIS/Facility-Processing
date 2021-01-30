@@ -13,11 +13,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import csv
 import os.path
 
+import csv23
+
 i = 0
 items = []
-with open(r"T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\PhotoCSVLoader.csv") as f:
-    csv_reader = csv.reader(f)
+csv_path = r"T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\PhotoCSVLoader.csv"
+with csv23.open(csv_path, "r") as csv_file:
+    csv_reader = csv.reader(csv_file)
     for row in csv_reader:
+        row = csv23.fix(row)
         i += 1
         if i == 1:
             continue

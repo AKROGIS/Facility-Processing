@@ -11,8 +11,11 @@ Written for Python 2.7 and 3.6.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import csv
 import os
 import sys
+
+import csv23
 
 try:
     import pyodbc
@@ -117,13 +120,13 @@ def photos_below(dir):
 
 
 def files_in_csv(csv_path):
-    import csv
 
     files = set()
-    with open(csv_path, "r") as f:
-        f.readline()  # skip the header
-        csv_reader = csv.reader(f)
+    with csv23.open(csv_path, "r") as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)  # skip the header
         for row in csv_reader:
+            row = csv23.fix(row)
             unit = row[0]
             folder = row[1]
             name = row[2]

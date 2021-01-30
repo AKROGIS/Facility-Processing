@@ -21,9 +21,12 @@ Written for Python 2.7; may work with Python 3.x.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import csv
 import datetime
 import os
 import sys
+
+import csv23
 
 try:
     import pyodbc
@@ -61,13 +64,13 @@ def get_connection_or_die(server, db):
 
 
 def read_csv(csv_path):
-    import csv
 
     rows = []
-    with open(csv_path, "rb") as f:
-        f.readline()  # skip the header
-        csv_reader = csv.reader(f)
+    with csv23.open(csv_path, "r") as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)  # skip the header
         for row in csv_reader:
+            row = csv23.fix(row)
             # print(row[4])
             rows.append([i for i in row])
     return rows
