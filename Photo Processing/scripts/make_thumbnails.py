@@ -15,26 +15,10 @@ Third party requirements:
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import sys
 
-
-try:
-    from PIL import Image
-except ImportError:
-    module_missing("Pillow")
+from PIL import Image
 
 import apply_orientation  # dependency on PIL
-
-
-def module_missing(name):
-    """Prints details about missing 3rd party module (name) and exits."""
-
-    print("Module {0} not found, make sure it is installed.".format(name))
-    exec_dir = os.path.split(sys.executable)[0]
-    pip = os.path.join(exec_dir, "Scripts", "pip")
-    print("Install with: {0} install {1}".format(pip, name))
-    print("Reference: https://pypi.python.org/pypi/{0}".format(name))
-    sys.exit()
 
 
 def is_jpeg(path):

@@ -17,7 +17,6 @@ Third party requirements:
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import csv
-import os
 import sys
 import xml.etree.ElementTree as eT
 
@@ -27,26 +26,14 @@ except ImportError:
     # Python 3 replacement
     import urllib.request as urllib2
 
-
-try:
-    import pyodbc
-except ImportError:
-    module_missing("pyodbc")
+import pyodbc
 
 import csv23
 
+# Use `xrange` as a replacement for `range` on Python 2
+# pylint: disable=undefined-variable,redefined-builtin
 if sys.version_info[0] < 3:
     range = xrange
-
-def module_missing(name):
-    """Prints details about missing 3rd party module (name) and exits."""
-
-    print("Module {0} not found, make sure it is installed.".format(name))
-    exec_dir = os.path.split(sys.executable)[0]
-    pip = os.path.join(exec_dir, "Scripts", "pip")
-    print("Install with: {0} install {1}".format(pip, name))
-    print("Reference: https://pypi.python.org/pypi/{0}".format(name))
-    sys.exit()
 
 
 def location_query(site_id, asset_code):
