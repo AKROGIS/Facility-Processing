@@ -167,7 +167,7 @@ def locations_page(park, page):
         return False, []
 
     data = json.load(f)
-    # print data
+    # print(data)
     total_pages = data["TotalPages"]  # maybe 0 if there is no data
     current_page = data["Page"]  # will always be 1 or greater
     done = current_page >= total_pages
@@ -281,7 +281,7 @@ def assets_page(park, page):
 
     data = json.load(f)
     f.close()
-    # print data
+    # print(data)
     total_pages = data["TotalPages"]
     current_page = data["Page"]
     print(park, current_page, total_pages)

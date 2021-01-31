@@ -420,7 +420,7 @@ def fill_table(connection, name):
                         for row in chunk
                     ]
                 )
-                # print sql + values
+                # print(sql + values)
                 wcursor.execute(sql + values)
     try:
         wcursor.commit()
@@ -441,7 +441,7 @@ def copy_column(connection, column_name, from_table, to_table):
         "from [{1}] as f join [{2}] as t "
         "on t.[{3}] = f.[{3}]"
     ).format(column_name, from_table, to_table, key)
-    # print sql
+    # print(sql)
     execute_sql(connection, sql)
 
 
