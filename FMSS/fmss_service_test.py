@@ -6,15 +6,19 @@ Note: Worked with the older REST service as of June 21, 2016.
 The old webservice was retired.
 As of June 4, 2018, this worked with the new SOAP services (still underdevelopment)
 
-Written for Python 2.7; will NOT with Python 3.x.
+Written for Python 2.7; it may with Python 3.x.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    # Python 3 replacement
+    import urllib.request as urllib2
 
 
-endpoint1 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISLOCQ"
+endpoint1 = "https://mif.pfmd.nps.gov/meaweb/services/FMSSGISLOCQ"
 query1 = """
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Body>
@@ -31,7 +35,7 @@ query1 = """
     lo2="4100", siteid="P117"
 )
 
-endpoint2 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISFRPPQ"
+endpoint2 = "https://mif.pfmd.nps.gov/meaweb/services/FMSSGISFRPPQ"
 query2 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header/>
   <soapenv:Body>
@@ -47,7 +51,7 @@ query2 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/env
     frpp="1"
 )
 
-endpoint3 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISASSETQ"
+endpoint3 = "https://mif.pfmd.nps.gov/meaweb/services/FMSSGISASSETQ"
 query3 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header/>
   <soapenv:Body>
@@ -65,7 +69,7 @@ query3 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/env
     lo2="4100", siteid="P117", loc="43743"
 )
 
-endpoint4 = r"https://mif.pfmd.nps.gov/meaweb/services/FMSSGISWOQ"
+endpoint4 = "https://mif.pfmd.nps.gov/meaweb/services/FMSSGISWOQ"
 query4 = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header/>
   <soapenv:Body>

@@ -4,14 +4,25 @@ Creates a CSV file of facilities data for a SOAP request to the FMSS web service
 
 File paths are hard coded in the script and relative to the current working directory.
 
-Written for Python 2.7; will NOT with Python 3.x.
+Written for Python 2.7; it may with Python 3.x.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import csv
 import json
-import urllib2
+
+try:
+    import urllib2
+except ImportError:
+    # Python 3 replacement
+    import urllib.request as urllib2
+
+try:
+    from urllib2 import HTTPError
+except ImportError:
+    # Python 3 replacement
+    from urllib.error import HTTPError
 
 import csv23
 
@@ -30,7 +41,7 @@ response = {
 
 # example item in PagedList
 example = {
-    "LOCATIONSID": 5128917331L,
+    "LOCATIONSID": 5128917331,
     "STATUS": {"maxvalue": "OPERATING", "Value": "OPERATING"},
     "SOURCESYSID": "",
     "DESCRIPTION": "ANM Alaska Packers Historic Site & Access Area",
@@ -54,7 +65,7 @@ example = {
     "LOCOPER": {
         "FLO3": "4",
         "SHIFTNUM": "",
-        "LOCOPERID": 3059260311L,
+        "LOCOPERID": 3059260311,
         "WARRANTYEXPDATE": None,
     },
     "CHANGEDATE": "2014-02-14T12:24:44-07:00",
@@ -162,7 +173,7 @@ def locations(park):
 def locations_page(park, page):
     try:
         f = urllib2.urlopen(location_url.format(sites[park], page))
-    except urllib2.HTTPError:
+    except HTTPError:
         print("Unable to retrieve Location page {0} for {1}.".format(page, park))
         return False, []
 
@@ -275,7 +286,7 @@ def assets(park):
 def assets_page(park, page):
     try:
         f = urllib2.urlopen(asset_url.format(sites[park], page))
-    except urllib2.HTTPError:
+    except HTTPError:
         print("Unable to retrieve Asset page {0} for {1}.".format(page, park))
         return False, []
 

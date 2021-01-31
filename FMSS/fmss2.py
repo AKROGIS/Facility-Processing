@@ -8,7 +8,7 @@ As of June 4, 2018, this worked with the new SOAP services (still underdevelopme
 
 File paths are hard coded in the script and relative to the current working directory.
 
-Written for Python 2.7; will NOT with Python 3.x.
+Written for Python 2.7; it may with Python 3.x.
 
 Third party requirements:
 * pyodbc - https://pypi.python.org/pypi/pyodbc
@@ -21,7 +21,12 @@ import os
 import sys
 import xml.etree.ElementTree as eT
 
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    # Python 3 replacement
+    import urllib.request as urllib2
+
 
 try:
     import pyodbc
@@ -45,7 +50,7 @@ def module_missing(name):
 def location_query(site_id, asset_code):
     # host = "mif.pfmd.nps.gov"
     # action = '"urn:processDocument"'
-    endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISLOCQ"
+    endpoint = "https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISLOCQ"
 
     query = """<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
       <soapenv:Header/>
@@ -85,7 +90,7 @@ def location_query(site_id, asset_code):
 
 
 def frpp_query(location_id):
-    endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISFRPPQ"
+    endpoint = "https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISFRPPQ"
 
     query = """<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
       <soapenv:Header/>
@@ -118,7 +123,7 @@ def frpp_query(location_id):
 
 
 def asset_query(site_id, asset_code):
-    endpoint = r"https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISASSETQ"
+    endpoint = "https://uat1mif.pfmd.nps.gov/meawebuat1/services/FMSSGISASSETQ"
 
     query = """<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
       <soapenv:Header/>
