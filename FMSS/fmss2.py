@@ -35,6 +35,8 @@ except ImportError:
 
 import csv23
 
+if sys.version_info[0] < 3:
+    range = xrange
 
 def module_missing(name):
     """Prints details about missing 3rd party module (name) and exits."""
@@ -345,7 +347,7 @@ def execute_sql(connection, sql):
 
 def chunks(l, n):
     """Yield successive n-sized chunks from list l."""
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i : i + n]
 
 
