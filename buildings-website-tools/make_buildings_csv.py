@@ -12,6 +12,7 @@ Written for Python 2.7; will NOT work with Python 3.x.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import csv
+from io import open
 import os.path
 import sys
 
@@ -87,20 +88,60 @@ def get_building_data(connection):
     return rows
 
 
-def write_building_csv(filename, rows):
-    with open(filename, "wb") as f:
-        f.write(
-            "Latitude,Longitude,FMSS_Id,Desc,Cost,Size,Status,Year,Occupant,Name,Park_Id,Photo_Id\n"
+# pylint: disable=redefined-builtin
+def csv23_open(filename, mode="r"):
+    """
+    Open a file for CSV mode in a Python 2 and 3 compatible way.
+
+    mode must be one of "r" for reading or "w" for writing.
+    """
+
+    if sys.version_info[0] < 3:
+        return open(filename, mode + "b")
+    return open(filename, mode, encoding="utf-8", newline="")
+
+
+def cvs23_write(writer, row):
+    """
+    Write a row to a csv writer.
+
+    writer is a csv.writer, and row is a list of unicode or number objects.
+    """
+
+    if sys.version_info[0] < 3:
+        # Ignore the pylint error that unicode is undefined in Python 3
+        # pylint: disable=undefined-variable
+
+        writer.writerow(
+            [
+                item.encode("utf-8") if isinstance(item, unicode) else item
+                for item in row
+            ]
         )
-        csv_writer = csv.writer(
-            f,
-            delimiter=",",
-            quotechar='"',
-            quoting=csv.QUOTE_MINIMAL,
-            lineterminator="\n",
-        )
+    else:
+        writer.writerow(row)
+
+
+def write_building_csv(csv_path, rows):
+    header = [
+        "Latitude",
+        "Longitude",
+        "FMSS_Id",
+        "Desc",
+        "Cost",
+        "Size",
+        "Status",
+        "Year",
+        "Occupant",
+        "Name",
+        "Park_Id",
+        "Photo_Id",
+    ]
+    with csv23_open(csv_path, "w") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        cvs23_write(csv_writer, header)
         for row in rows:
-            csv_writer.writerow([unicode(x).encode("utf8") for x in row])
+            cvs23_write(csv_writer, row)
 
 
 if __name__ == "__main__":
