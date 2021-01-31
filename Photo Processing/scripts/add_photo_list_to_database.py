@@ -113,7 +113,7 @@ def make_new_version(conn):
             .fetchone()
         )
     except pyodbc.Error as de:
-        err = "Database error:\n" + str(sql) + "\n" + str(de)
+        err = "Database error:\n{0}\n{1}".format(sql, de)
         print(err)
     if row and len(row) == 2:
         return "{0}.{1}".format(*row)
@@ -151,14 +151,13 @@ def write_photos(connection, version, photos):
                 )
                 sql = sql.format(link, *photo_db)
                 wcursor.execute(sql)
-            sql = "EXEC dbo.Calc_Attachments '{0}';".format(
-                version
-            )  # Do automated calcs
+            # Do automated calcs
+            sql = "EXEC dbo.Calc_Attachments '{0}';".format(version)
             wcursor.execute(sql)
             sql = "EXEC sde.edit_version '{0}', 2;".format(version)  # Stop editing
             wcursor.execute(sql)
     except pyodbc.Error as de:
-        err = "Database error:\n" + str(sql) + "\n" + str(de)
+        err = "Database error:\n{0}\n{1}".format(sql, de)
         print(err)
         return err
     return None
@@ -169,7 +168,7 @@ def execute_sql(connection, sql):
         with connection.cursor() as wcursor:
             wcursor.execute(sql)
     except pyodbc.Error as de:
-        err = "Database error:\n" + str(sql) + "\n" + str(de)
+        err = "Database error:\n{0}\n{1}".format(sql, de)
         print(err)
         return err
     return None

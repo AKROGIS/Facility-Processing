@@ -50,7 +50,7 @@ def location_query(site_id, asset_code):
     headers = {  # "Host": host,
         "Content-Type": 'application/soap+xml; charset="utf-8"',
         # "SOAPAction": action,
-        "Content-Length": str(len(encoded_query)),
+        "Content-Length": "{0}".format(len(encoded_query)),
     }
 
     request = urllib2.Request(url=endpoint, headers=headers, data=encoded_query)
@@ -90,7 +90,7 @@ def frpp_query(location_id):
     # HTTP Header for SOAP 1.2
     headers = {
         "Content-Type": 'application/soap+xml; charset="utf-8"',
-        "Content-Length": str(len(encoded_query)),
+        "Content-Length": "{0}".format(len(encoded_query)),
     }
 
     request = urllib2.Request(url=endpoint, headers=headers, data=encoded_query)
@@ -122,7 +122,7 @@ def asset_query(site_id, asset_code):
     # HTTP Header for SOAP 1.2
     headers = {
         "Content-Type": 'application/soap+xml; charset="utf-8"',
-        "Content-Length": str(len(encoded_query)),
+        "Content-Length": "{0}".format(len(encoded_query)),
     }
 
     request = urllib2.Request(url=endpoint, headers=headers, data=encoded_query)
@@ -281,9 +281,9 @@ def build_csv(csv_path):
         for site in sites:
             site_id = sites[site]
             for asset_code in asset_types:
-                data = [site, str(asset_code), asset_types[asset_code]]
+                data = [site, "{0}".format(asset_code), asset_types[asset_code]]
                 print(data)
-                response = location_query(site_id, str(asset_code))
+                response = location_query(site_id, "{0}".format(asset_code))
                 convert_xml_to_csv(data, response, csv_writer)
 
 
@@ -398,9 +398,9 @@ def fill_table(connection, name):
     for site in sites:  # in ['ANIA']:
         site_id = sites[site]
         for asset_code in asset_types:  # in [4100]:
-            data = [site, str(asset_code), asset_types[asset_code]]
+            data = [site, "{0}".format(asset_code), asset_types[asset_code]]
             print(data)
-            response = location_query(site_id, str(asset_code))
+            response = location_query(site_id, "{0}".format(asset_code))
             rows = convert_xml_to_rows(data, response)
 
             # SQL Server is limited to 1000 rows in an insert

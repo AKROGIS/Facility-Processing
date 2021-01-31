@@ -145,7 +145,7 @@ assetCodes = {
 
 def my_str(s):
     if s:
-        return str(s)
+        return "{0}".format(s)
     else:
         return ""
 

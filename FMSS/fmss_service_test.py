@@ -92,7 +92,7 @@ endpoint = endpoint3
 # SOAP 1.1 Header
 headers = {
     "Content-Type": 'text/xml; charset="utf-8"',
-    "Content-Length": str(len(encoded_query)),
+    "Content-Length": "{0}".format(len(encoded_query)),
 }
 
 request = urllib2.Request(url=endpoint, headers=headers, data=encoded_query)

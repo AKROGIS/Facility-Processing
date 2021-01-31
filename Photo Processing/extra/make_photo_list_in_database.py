@@ -79,7 +79,7 @@ def execute_sql(connection, sql):
     try:
         wcursor.commit()
     except pyodbc.Error as de:
-        return "Database error: " + sql + "\n" + str(connection) + "\n" + str(de)
+        return "Database error:\n{0}\n{1}\n{1}".format(sql, connection, de)
     return None
 
 
@@ -104,12 +104,8 @@ def write_photos(connection, photos):
     try:
         wcursor.commit()
     except pyodbc.Error as de:
-        return (
-            "Database error inserting into 'Photos_In_Filesystem'\n"
-            + str(connection)
-            + "\n"
-            + str(de)
-        )
+        msg = "Database error inserting into 'Photos_In_Filesystem'\n{0}\n{1}"
+        return msg.format(connection, de)
     return None
 
 
