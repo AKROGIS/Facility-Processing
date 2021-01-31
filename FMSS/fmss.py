@@ -10,8 +10,11 @@ Written for Python 2.7; will NOT with Python 3.x.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import csv
 import json
 import urllib2
+
+import csv23
 
 # These URLs return JSON
 location_url = "http://inpniscvnpunit2/fmss/api/locations?siteid={0}&page={1}"
@@ -232,39 +235,27 @@ loc_header = [
 ]
 
 
-def lshowone(park, filename=None):
-    if filename:
-        import csv
-
-        with open(filename, "wb") as csvfile:
-            cf = csv.writer(csvfile)
-            cf.writerow(loc_header)
-            for item in locations(park):
-                item = [
-                    s.encode("utf-8") if isinstance(s, (str, unicode)) else s
-                    for s in item
-                ]
-                cf.writerow(item)
+def lshowone(park, csv_path=None):
+    if csv_path:
+        with csv23.open(csv_path, "w") as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv23.write(csv_writer, loc_header)
+            for row in locations(park):
+                csv23.write(csv_writer, row)
     else:
         print(",".join(loc_header))
         for item in locations(park):
             print(",".join([my_str(x) for x in item]))
 
 
-def lshowall(filename=None):
-    if filename:
-        import csv
-
-        with open(filename, "wb") as csvfile:
-            cf = csv.writer(csvfile)
-            cf.writerow(loc_header)
+def lshowall(csv_path=None):
+    if csv_path:
+        with csv23.open(csv_path, "w") as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv23.write(csv_writer, loc_header)
             for park in sites:
-                for item in locations(park):
-                    item = [
-                        s.encode("utf-8") if isinstance(s, (str, unicode)) else s
-                        for s in item
-                    ]
-                    cf.writerow(item)
+                for row in locations(park):
+                    csv23.write(csv_writer, row)
     else:
         print(",".join(loc_header))
         for park in sites:
@@ -369,39 +360,27 @@ asset_header = [
 ]
 
 
-def ashowone(park, filename=None):
-    if filename:
-        import csv
-
-        with open(filename, "wb") as csvfile:
-            cf = csv.writer(csvfile)
-            cf.writerow(asset_header)
-            for item in assets(park):
-                item = [
-                    s.encode("utf-8") if isinstance(s, (str, unicode)) else s
-                    for s in item
-                ]
-                cf.writerow(item)
+def ashowone(park, csv_path=None):
+    if csv_path:
+        with csv23.open(csv_path, "w") as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv23.write(csv_writer, asset_header)
+            for row in assets(park):
+                csv23.write(csv_writer, row)
     else:
         print(",".join(asset_header))
         for item in assets(park):
             print(",".join([my_str(x) for x in item]))
 
 
-def ashowall(filename=None):
-    if filename:
-        import csv
-
-        with open(filename, "wb") as csvfile:
-            cf = csv.writer(csvfile)
-            cf.writerow(asset_header)
+def ashowall(csv_path=None):
+    if csv_path:
+        with csv23.open(csv_path, "w") as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv23.write(csv_writer, asset_header)
             for park in sites:
-                for item in assets(park):
-                    item = [
-                        s.encode("utf-8") if isinstance(s, (str, unicode)) else s
-                        for s in item
-                    ]
-                    cf.writerow(item)
+                for row in assets(park):
+                    csv23.write(csv_writer, row)
     else:
         print(",".join(asset_header))
         for park in sites:

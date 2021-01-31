@@ -20,6 +20,8 @@ import sys
 import urllib2
 import xml.etree.ElementTree as eT
 
+import csv23
+
 
 def location_query(site_id, asset_code):
     # host = "mif.pfmd.nps.gov"
@@ -249,11 +251,7 @@ def convert_xml_to_rows(data, response):
 def convert_xml_to_csv(data, response, csv_writer):
     rows = convert_xml_to_rows(data, response)
     for row in rows:
-        utf8_row = [
-            u.encode("utf-8")
-            for u in [unicode(n) if n is not None else "" for n in row]
-        ]
-        csv_writer.writerow(utf8_row)
+        csv23.write(csv_writer, row)
 
 
 def test_service():
@@ -268,18 +266,18 @@ def test_service2():
     return response
 
 
-def test_csv(out_file):
-    with open(out_file, "wb") as csv_file:
+def test_csv(csv_path):
+    with csv23.open(csv_path, "w") as csv_file:
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(table_column_names)
+        csv23.write(csv_writer, table_column_names)
         response = test_service()
         convert_xml_to_csv(["ANIA", "4100", "Building"], response, csv_writer)
 
 
-def build_csv(out_file):
-    with open(out_file, "wb") as csv_file:
+def build_csv(csv_path):
+    with csv23.open(csv_path, "w") as csv_file:
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(table_column_names)
+        csv23.write(csv_writer, table_column_names)
         for site in sites:
             site_id = sites[site]
             for asset_code in asset_types:
