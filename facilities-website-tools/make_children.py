@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Converts CSV data from the database into JSON files that the web app can load.
 

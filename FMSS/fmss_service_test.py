@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Test queries to the FMSS SOAP based web services.
 

@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-
 """
 Creates a CSV list of photos (and select EXIF metadata) for all photos below a folder.
 
 Absolute file paths are hard coded in the script.
 
 Written for Python 2.7; may work with Python 3.x.
+
+Third party requirements:
+* exifread - https://pypi.python.org/pypi/ExifRead
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -13,8 +15,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import datetime
 from io import open
 import os
+import sys
 
-import exifread  # https://pypi.python.org/pypi/ExifRead
+try:
+    import exifread
+except ImportError:
+    module_missing("exifread")
+
 
 # C:\Python27\ArcGIS10.5\Scripts\pip.exe --cert "C:\users\resarwas\DOIRootCA.crt" install exifread
 
@@ -23,6 +30,18 @@ root = r"T:\PROJECTS\AKR\FMSS\Photos\Original"
 # root = os.path.dirname(os.path.abspath(__file__))
 # csv = os.path.join(root, "PhotoList.csv")
 csv = r"C:\tmp\PhotoList.csv"
+
+
+def module_missing(name):
+    """Prints details about missing 3rd party module (name) and exits."""
+
+    print("Module {0} not found, make sure it is installed.".format(name))
+    exec_dir = os.path.split(sys.executable)[0]
+    pip = os.path.join(exec_dir, "Scripts", "pip")
+    print("Install with: {0} install {1}".format(pip, name))
+    print("Reference: https://pypi.python.org/pypi/{0}".format(name))
+    sys.exit()
+
 
 with open(csv, "w", encoding="utf-8") as f:
     f.write("folder,photo,id,namedate,exifdate,lat,lon,gpsdate,size,filedate\n")

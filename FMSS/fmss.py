@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Creates a CSV file of facilities data for a SOAP request to the FMSS web service.
 

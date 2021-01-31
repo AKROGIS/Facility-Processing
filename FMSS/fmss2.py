@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Tool to query FMSS SOAP based web services.
 
@@ -10,6 +9,9 @@ As of June 4, 2018, this worked with the new SOAP services (still underdevelopme
 File paths are hard coded in the script and relative to the current working directory.
 
 Written for Python 2.7; will NOT with Python 3.x.
+
+Third party requirements:
+* pyodbc - https://pypi.python.org/pypi/pyodbc
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
@@ -17,10 +19,27 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import csv
 import os
 import sys
-import urllib2
 import xml.etree.ElementTree as eT
 
+import urllib2
+
+try:
+    import pyodbc
+except ImportError:
+    module_missing("pyodbc")
+
 import csv23
+
+
+def module_missing(name):
+    """Prints details about missing 3rd party module (name) and exits."""
+
+    print("Module {0} not found, make sure it is installed.".format(name))
+    exec_dir = os.path.split(sys.executable)[0]
+    pip = os.path.join(exec_dir, "Scripts", "pip")
+    print("Install with: {0} install {1}".format(pip, name))
+    print("Reference: https://pypi.python.org/pypi/{0}".format(name))
+    sys.exit()
 
 
 def location_query(site_id, asset_code):
@@ -287,19 +306,6 @@ def build_csv(csv_path):
                 convert_xml_to_csv(data, response, csv_writer)
 
 
-def module_missing(name):
-    print("Module {0} not found, make sure it is installed.".format(name))
-    exec_dir = os.path.split(sys.executable)[0]
-    pip = os.path.join(exec_dir, "Scripts", "pip.exe")
-    if not os.path.exists(pip):
-        print(
-            "First install pip. See instructions at: "
-            "'https://pip.pypa.io/en/stable/installing/'."
-        )
-    print("Install with: {0} install {1}".format(pip, name))
-    sys.exit()
-
-
 def get_connection_or_die(server, db, user=None, password=None):
     conn_string = (
         "DRIVER={SQL Server Native Client 11.0};"
@@ -437,13 +443,6 @@ def copy_column(connection, column_name, from_table, to_table):
     ).format(column_name, from_table, to_table, key)
     # print sql
     execute_sql(connection, sql)
-
-
-try:
-    import pyodbc
-except ImportError:
-    pyodbc = None
-    module_missing("pyodbc")
 
 
 def update_db():

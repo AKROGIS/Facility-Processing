@@ -4,11 +4,30 @@
 Rotates an image to normalize it based on the EXIF rotation tag
 
 Written for Python 2.7; may work with Python 3.x.
+
+Third party requirements:
+* Pillow (PIL) - https://pypi.python.org/pypi/Pillow
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from PIL import Image
+import sys
+
+try:
+    from PIL import Image
+except ImportError:
+    module_missing("Pillow")
+
+
+def module_missing(name):
+    """Prints details about missing 3rd party module (name) and exits."""
+
+    print("Module {0} not found, make sure it is installed.".format(name))
+    exec_dir = os.path.split(sys.executable)[0]
+    pip = os.path.join(exec_dir, "Scripts", "pip")
+    print("Install with: {0} install {1}".format(pip, name))
+    print("Reference: https://pypi.python.org/pypi/{0}".format(name))
+    sys.exit()
 
 
 def flip_horizontal(im):

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Looks for all files in a CSV file that are not in the filesystem.
 
