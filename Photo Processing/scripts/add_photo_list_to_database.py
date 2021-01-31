@@ -33,7 +33,7 @@ import csv23
 try:
     import pyodbc
 except ImportError:
-    module_missing"pyodbc")
+    module_missing("pyodbc")
 
 
 def module_missing(name):
