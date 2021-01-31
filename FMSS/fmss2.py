@@ -300,27 +300,36 @@ def build_csv(csv_path):
                 convert_xml_to_csv(data, response, csv_writer)
 
 
-def get_connection_or_die(server, db, user=None, password=None):
-    conn_string = (
-        "DRIVER={SQL Server Native Client 11.0};"
-        + "SERVER={0};DATABASE={1};".format(server, db)
-    )
-    if user is None or password is None:
-        conn_string += "Trusted_Connection=Yes;"
-    else:
-        conn_string += "Uid={0};Pwd={1};".format(user, password)
+def get_connection_or_die(server, database):
+    """
+    Get a Trusted pyodbc connection to the SQL Server database on server.
 
-    try:
-        connection = pyodbc.connect(conn_string)
-    except pyodbc.Error as e:
-        print("Rats!!  Unable to connect to the database.")
-        print("Make sure you have the SQL Server 2014 client software installed")
-        print("Make sure your account has the proper DB permissions.")
-        print("Contact Regan (regan_sarwas@nps.gov) for assistance.")
-        print("  Connection: " + conn_string)
-        print("  Error: " + e[1])
-        sys.exit()
-    return connection
+    Try several connection strings.
+    See https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-SQL-Server-from-Windows
+
+    Exit with an error message if there is no successful connection.
+    """
+    drivers = [
+        "{ODBC Driver 17 for SQL Server}",  # supports SQL Server 2008 through 2017
+        "{ODBC Driver 13.1 for SQL Server}",  # supports SQL Server 2008 through 2016
+        "{ODBC Driver 13 for SQL Server}",  # supports SQL Server 2005 through 2016
+        "{ODBC Driver 11 for SQL Server}",  # supports SQL Server 2005 through 2014
+        "{SQL Server Native Client 11.0}",  # DEPRECATED: released with SQL Server 2012
+        # '{SQL Server Native Client 10.0}',    # DEPRECATED: released with SQL Server 2008
+    ]
+    conn_template = "DRIVER={0};SERVER={1};DATABASE={2};Trusted_Connection=Yes;"
+    for driver in drivers:
+        conn_string = conn_template.format(driver, server, database)
+        try:
+            connection = pyodbc.connect(conn_string)
+            return connection
+        except pyodbc.Error:
+            pass
+    print("Rats!! Unable to connect to the database.")
+    print("Make sure you have an ODBC driver installed for SQL Server")
+    print("and your AD account has the proper DB permissions.")
+    print("Contact akro_gis_helpdesk@nps.gov for assistance.")
+    sys.exit()
 
 
 def execute_sql(connection, sql):
@@ -440,7 +449,7 @@ def copy_column(connection, column_name, from_table, to_table):
 
 
 def update_db():
-    conn = get_connection_or_die("inpakrovmais", "akr_facility")
+    conn = get_connection_or_die("inpakrovmais", "akr_facility2")
     try:
         create_table(conn, "FMSSExport_New")
         fill_table(conn, "FMSSExport_New")

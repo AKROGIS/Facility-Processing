@@ -21,33 +21,36 @@ import sys
 import pyodbc
 
 
-def get_connection_or_die():
-    conn_string = (
-        "DRIVER={{SQL Server Native Client 11.0}};"
-        "SERVER={0};DATABASE={1};Trusted_Connection=Yes;"
-    )
-    conn_string = conn_string.format("inpakrovmais", "akr_facility2")
-    try:
-        connection = pyodbc.connect(conn_string)
-        return connection
-    except pyodbc.Error:
-        # Try to alternative connection string for 2008
-        conn_string2 = conn_string.replace(
-            "SQL Server Native Client 11.0", "SQL Server Native Client 10.0"
-        )
-    try:
-        connection = pyodbc.connect(conn_string)
-        return connection
-    except pyodbc.Error as e:
-        # Additional alternatives are 'SQL Native Client' (2005) and 'SQL Server' (2000)
-        print("Rats!!  Unable to connect to the database.")
-        print("Make sure you have the SQL Server Client installed and")
-        print("your AD account has the proper DB permissions.")
-        print("Contact regan_sarwas@nps.gov for assistance.")
-        print("  Connection: " + conn_string)
-        print("         and: " + conn_string2)
-        print("  Error: " + e[1])
-        sys.exit()
+def get_connection_or_die(server, database):
+    """
+    Get a Trusted pyodbc connection to the SQL Server database on server.
+
+    Try several connection strings.
+    See https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-SQL-Server-from-Windows
+
+    Exit with an error message if there is no successful connection.
+    """
+    drivers = [
+        "{ODBC Driver 17 for SQL Server}",  # supports SQL Server 2008 through 2017
+        "{ODBC Driver 13.1 for SQL Server}",  # supports SQL Server 2008 through 2016
+        "{ODBC Driver 13 for SQL Server}",  # supports SQL Server 2005 through 2016
+        "{ODBC Driver 11 for SQL Server}",  # supports SQL Server 2005 through 2014
+        "{SQL Server Native Client 11.0}",  # DEPRECATED: released with SQL Server 2012
+        # '{SQL Server Native Client 10.0}',    # DEPRECATED: released with SQL Server 2008
+    ]
+    conn_template = "DRIVER={0};SERVER={1};DATABASE={2};Trusted_Connection=Yes;"
+    for driver in drivers:
+        conn_string = conn_template.format(driver, server, database)
+        try:
+            connection = pyodbc.connect(conn_string)
+            return connection
+        except pyodbc.Error:
+            pass
+    print("Rats!! Unable to connect to the database.")
+    print("Make sure you have an ODBC driver installed for SQL Server")
+    print("and your AD account has the proper DB permissions.")
+    print("Contact akro_gis_helpdesk@nps.gov for assistance.")
+    sys.exit()
 
 
 def get_photo_data(connection):
@@ -83,7 +86,7 @@ def get_photo_data(connection):
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     outfile = os.path.join(script_dir, "photos.json")
-    conn = get_connection_or_die()
+    conn = get_connection_or_die("inpakrovmais", "akr_facility2")
     data = get_photo_data(conn)
     with open(outfile, "w", encoding="utf-8") as fh:
         fh.write(json.dumps(data, indent=2, separators=(",", ": ")))

@@ -33,8 +33,15 @@ import pyodbc
 import csv23
 
 
-def get_connection_or_die(server, db):
-    # See https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-SQL-Server-from-Windows
+def get_connection_or_die(server, database):
+    """
+    Get a Trusted pyodbc connection to the SQL Server database on server.
+
+    Try several connection strings.
+    See https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-SQL-Server-from-Windows
+
+    Exit with an error message if there is no successful connection.
+    """
     drivers = [
         "{ODBC Driver 17 for SQL Server}",  # supports SQL Server 2008 through 2017
         "{ODBC Driver 13.1 for SQL Server}",  # supports SQL Server 2008 through 2016
@@ -45,7 +52,7 @@ def get_connection_or_die(server, db):
     ]
     conn_template = "DRIVER={0};SERVER={1};DATABASE={2};Trusted_Connection=Yes;"
     for driver in drivers:
-        conn_string = conn_template.format(driver, server, db)
+        conn_string = conn_template.format(driver, server, database)
         try:
             connection = pyodbc.connect(conn_string)
             return connection
@@ -54,7 +61,7 @@ def get_connection_or_die(server, db):
     print("Rats!! Unable to connect to the database.")
     print("Make sure you have an ODBC driver installed for SQL Server")
     print("and your AD account has the proper DB permissions.")
-    print("Contact regan_sarwas@nps.gov for assistance.")
+    print("Contact akro_gis_helpdesk@nps.gov for assistance.")
     sys.exit()
 
 
