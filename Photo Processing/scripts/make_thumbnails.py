@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Creates and updates a collection of thumbnails for photos listed in a CSV.
 

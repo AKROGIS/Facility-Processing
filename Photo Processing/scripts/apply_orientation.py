@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Rotates an image to normalize it based on the EXIF rotation tag
 
