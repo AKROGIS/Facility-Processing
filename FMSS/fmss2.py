@@ -30,7 +30,7 @@ import pyodbc
 
 import csv23
 
-# Use `xrange` as a replacement for `range` on Python 2
+# Python 2/3 compatible xrange() cabability
 # pylint: disable=undefined-variable,redefined-builtin
 if sys.version_info[0] < 3:
     range = xrange
