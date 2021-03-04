@@ -25,7 +25,7 @@ class Config(object):
 
     # Path root - the absolute path prexix for the data in the CSV
     # can be NULL and then the path in the CSV is either absolute or relative.
-    path_root = r'T:\PROJECTS\AKR\FMSS\PHOTOS\ORIGINAL'
+    path_root = r"T:\PROJECTS\AKR\FMSS\PHOTOS\ORIGINAL"
 
     # Folder index - the column index in the CSV file that has the folder path
     folder_index = 6
@@ -51,7 +51,7 @@ def check_paths(csv_path):
             if not name or not folder:
                 print("Bad record at line {0}".format(line))
                 continue
-            if path_root is None:
+            if Config.path_root is None:
                 path = os.path.join(folder, name)
             else:
                 path = os.path.join(Config.path_root, folder, name)
