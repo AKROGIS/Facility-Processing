@@ -2,8 +2,7 @@
 """
 Compares the list of photos in database + CSV file with the filesystem.
 
-File paths are hard coded in the script relative to the scipt's location.
-The database connection string and schema are also hardcoded in the script.
+Review/Edit the Config parameters before executing.
 
 Written for Python 2.7 and 3.6.
 
@@ -20,6 +19,51 @@ import sys
 import pyodbc
 
 import csv23
+
+
+class Config(object):
+    """Namespace for configuration parameters. Edit as needed."""
+
+    # pylint: disable=useless-object-inheritance,too-few-public-methods
+
+    # Root folder - the common prefix for the `csv_path` and `photo_folder`
+    # optional if you choose to provide a absolute path for both paths.
+    root_folder = r"T:\PROJECTS\AKR\FMSS\PHOTOS"
+
+    # Photo folder - the absolute path prexix for location of photo folders
+    # and photo files.  Photos can be in the photo_folder or in sub folders
+    # to any depth.
+    photo_folder = os.path.join(root_folder, "ORIGINAL")
+
+    # The path to the CSV file with photo names and folders.
+    csv_path = os.path.join(root_folder, "PhotoCSVLoader.csv")
+
+    # Unit index - the column index in `csv_path` for the first sub folder
+    # in `root_folder`. Can be None if not used in CSV
+    unit_index = 0
+
+    # Folder index - the column index in `csv_path` for the sub folder path
+    # below `root_folder/csv[unit_index]`. Can be None if not used in CSV
+    folder_index = 1
+
+    # Name index - the column index in `csv_path` for the photo name
+    # in `root_folder/csv[unit_index]/csv[folder_index]`.
+    name_index = 2
+
+    # Photo query - A database query to produce a single column of relative
+    # photo paths.
+    photo_query = """
+        SELECT REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '')
+          FROM gis.AKR_ATTACH_evw
+         WHERE ATCHTYPE = 'Photo'
+           AND ATCHLINK LIKE 'https://akrgis.nps.gov/fmss/photos/web/%'
+    """
+
+    # Database - the the name of the database in which to run the query
+    database = "akr_facility2"
+
+    # Server - the name of the server which has the database
+    server = "inpakrovmais"
 
 
 def get_connection_or_die(server, database):
@@ -55,88 +99,55 @@ def get_connection_or_die(server, database):
 
 
 def get_database_photos(connection):
-    """Return a list of photos paths in the database photos table."""
+    """Return a set of standardized relative paths from the database connection."""
     try:
-        rows = (
-            connection.cursor()
-            .execute(
-                """
-            SELECT REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '')
-              FROM gis.AKR_ATTACH_evw
-             WHERE ATCHTYPE = 'Photo'
-               AND ATCHLINK LIKE 'https://akrgis.nps.gov/fmss/photos/web/%'
-        """
-            )
-            .fetchall()
-        )
+        rows = connection.cursor().execute(Config.photo_query).fetchall()
     except pyodbc.Error as ex:
         print("Database error ocurred", ex)
-        rows = None
-    return rows
+        rows = []
 
-
-def files_for_folders(root):
-    """
-    Get the files in the folders below root
-    :param root: The full path of the folder to search
-    :return: A dictionary of the folders in root with a list of files for each folder.
-    All paths are relative to root.
-    """
-    files = {}
-    for folder in [f for f in os.listdir(root) if os.path.isdir(os.path.join(root, f))]:
-        print(folder, end=" ")
-        path = os.path.join(root, folder)
-        files[folder] = [
-            f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))
-        ]
-    return files
-
-
-def folder_file_tuples(root):
-    """
-    Get the (folder,file) info below root
-    :param root: The full path of the folder to search
-    :return: A list of (folder,file) pairs for each file in each folder below root.
-    folder and file are names, not paths.
-    """
-    pairs = []
-    folders = files_for_folders(root)
-    for folder in folders:
-        for name in folders[folder]:
-            pairs.append((folder, name))
-    return pairs
+    paths = [standardize(path) for path in rows]
+    return set(paths)
 
 
 def photos_below(folder):
-    """Return a list of relative paths to photos below folder."""
+    """Return a set of standardized relative paths to photos below folder."""
     folder += os.pathsep
-    results = []
+    paths = set()
     for root, _, files in os.walk(folder):
         relative_path = root.replace(folder, "")
         print(relative_path, end=" ")
         for filename in files:
             if is_image(filename):
-                results.append(os.path.join(relative_path, filename))
-    return results
+                path = os.path.join(relative_path, filename)
+                path = standardize(path)
+                paths.add(path)
+    return paths
 
 
 def files_in_csv(csv_path):
-    """Return a list of relative paths to photos in the file at csv_path."""
-    files = set()
+    """Return a set of standardized relative paths to photos in the file at csv_path."""
+    paths = set()
     with csv23.open(csv_path, "r") as csv_file:
         csv_reader = csv.reader(csv_file)
         next(csv_reader)  # skip the header
         for row in csv_reader:
             row = csv23.fix(row)
-            unit = row[0]
-            folder = row[1]
-            name = row[2]
-            if folder:
-                path = "{0}/{1}/{2}".format(unit, folder, name)
-            else:
-                path = "{0}/{1}".format(unit, name)
-            files.add(path.lower())
-    return files
+            path = row[Config.name_index]
+            if Config.folder_index is not None:
+                folder = row[Config.folder_index]
+                path = os.path.join(folder, path)
+            if Config.unit_index is not None:
+                folder = row[Config.unit_index]
+                path = os.path.join(folder, path)
+            path = standardize(path)
+            paths.add(path)
+    return paths
+
+
+def standardize(path):
+    """Returns a standardized path."""
+    return path.replace("\\", "/").lower()
 
 
 def is_image(name):
@@ -145,23 +156,11 @@ def is_image(name):
     return ext in [".jpg", ".jpeg", ".png", ".gif"]
 
 
-def is_jpeg(name):
-    """Return True if the file at name is a photo file."""
-    ext = os.path.splitext(name)[1].lower()
-    return ext in [".jpg", ".jpeg"]
-
-
 def compare(conn, csv_path, photo_dir):
     """Read the database plus CSV file and compare with filesystem."""
 
-    # pylint: disable=consider-using-set-comprehension
-    # set comprehensions are not available in Python2
-
     print("Reading database")
-    # duplicate paths in the database are OK;
-    #  two different features could be in the same photo
-    # so we want to unique-ify the list of photo links
-    db_photo_set = set([row[0].lower() for row in get_database_photos(conn)])
+    db_photo_set = get_database_photos(conn)
     print("Found {0} unique files in the Database.".format(len(db_photo_set)))
 
     print("\nReading {0}".format(csv_path))
@@ -170,12 +169,7 @@ def compare(conn, csv_path, photo_dir):
     print("Found {0} unique files in the {1}.".format(len(csv_photo_set), csv_file))
 
     print("\nReading Folders in " + photo_dir)
-    # Assumes script is in the Processing folder which is in the photos base folder.
-    #   some/path/PHOTOS/PROCESSING/this_script.py
-    #   some/path/PHOTOS/ORIGINAL/{park}/photos_files.jpg
-    # photo_tuples = [t for t in folder_file_tuples(photo_dir) if is_jpeg(t[1])]
-    # fs_photo_set = set([(t[0]+'/'+t[1]).lower() for t in photo_tuples])
-    fs_photo_set = set([p.lower().replace("\\", "/") for p in photos_below(photo_dir)])
+    fs_photo_set = photos_below(photo_dir)
     print("\nFound {0} unique files in the Filesystem.".format(len(fs_photo_set)))
     print("")
 
@@ -212,14 +206,8 @@ def compare(conn, csv_path, photo_dir):
 
 def main():
     """Get the paths and connections and then compare."""
-    conn = get_connection_or_die("inpakrovmais", "akr_facility2")
-    csv_file = "PhotoCSVLoader.csv"
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Assumes script ia adjacent to the CSV list of new photos
-    csv_path = os.path.join(script_dir, csv_file)
-    base_dir = os.path.dirname(script_dir)
-    photo_dir = os.path.join(base_dir, "ORIGINAL")
-    compare(conn, csv_path, photo_dir)
+    conn = get_connection_or_die(Config.server, Config.database)
+    compare(conn, Config.csv_path, Config.photo_folder)
 
 
 if __name__ == "__main__":
