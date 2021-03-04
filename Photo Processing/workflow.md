@@ -25,7 +25,7 @@ using a TBD process.*
   very careful that you do not overwrite an existing photo.  Not only will you
   destroy a photo that may be irreplaceable, but you will also create an
   inconsistency that may be hard to resolve.
-* Run the script `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py`
+* Run the script `.\PROCESSING\compare_photo_files_with_db_and_csv.py`
   and resolve any issues with missing or mis-named photo files before
   proceeding.
 
@@ -37,7 +37,7 @@ using a TBD process.*
    `ORIGINALPATH` but is not in `.\ORIGINAL` copy the original full resolution
    un-watermarked version from the `ORIGINALPATH` to the correct folder under
    `.\ORIGINAL` (i.e. `UNITCODE/FOLDER`).
-3. Run the script `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py`
+3. Run the script `.\PROCESSING\compare_photo_files_with_db_and_csv.py`
    and resolve any issues with missing or mis-named photo files before
    proceeding.
 4. Review the spreadsheet for any violation of the requirements in the
@@ -58,7 +58,7 @@ using a TBD process.*
    (YYYY-MM-DD) to the filename.
 9. Copy `.\PROCESSING\TemplatePhotoCSVLoader - Empty.csv` to
    `.\PROCESSING\PhotoCSVLoader.csv`.
-10. Run `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py` to verify
+10. Run `.\PROCESSING\compare_photo_files_with_db_and_csv.py` to verify
     that the database matches the file system.
 11. Run `.\PROCESSING\scripts\make_webphotos.py` to create web sized photos
     in `.\WEB` from the new photos in `.\ORIGINALS`.

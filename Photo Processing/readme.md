@@ -119,7 +119,7 @@ Requirements of the fields in `PhotoCSVLoader.csv`:
 
 ## Scripts
 
-### `Compare_Database_photos_To_ORIGINAL_Folder.py`
+### `compare_photo_files_with_db_and_csv.py`
 
 This script can be run at any time, but especially before and after editing
 `PhotoCSVLoader.csv`.  The script will compare the files in the folder
