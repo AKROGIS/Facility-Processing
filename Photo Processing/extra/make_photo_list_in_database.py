@@ -2,8 +2,22 @@
 """
 Writes the list of photos found in the filesystem to a database table.
 
-File paths are hard coded in the script relative to the scipt's location.
-The database connection string and schema are also hardcoded in the script.
+The database table will have the following columns:
+
+Folder, Filename, Lat, Lon, Bytes, Gpsdate, Exifdate, Filedate
+
+Filename - the filename of the photo (any file with a `.jpg` extension)
+Folder - the sub folder under `Config.photo_dir` containing the photo
+Exifdate - the date the photo was taken as encoded in the EXIF data
+Lat - the latitude of the photo location as encoded in the EXIF data
+Lon - the longitude of the photo location as encoded in the EXIF data
+Gpsdate - the date (in UTC) the photo was taken as encoded in the EXIF data
+Bytes - the size (in bytes) of the photo file
+Filedate - the file systems last modified date for the photo file
+
+CAUTION:
+Currently only Filename and Folder are populated.  See `make_photo_list.py`
+for a tool that creates a CSV file with the other attributes.
 
 Written for Python 2.7; may work with Python 3.x.
 
@@ -17,6 +31,26 @@ import os
 import sys
 
 import pyodbc
+
+
+class Config(object):
+    """Namespace for configuration parameters. Edit as needed."""
+
+    # pylint: disable=useless-object-inheritance,too-few-public-methods
+
+    # Photo_dir - the absolute path to the folder to search for photo files.
+    # Assumes all photos are in sub folders of photo_dir only one level deep.
+    # and that there are no photos in photo_dir.
+    photo_dir = r"T:\PROJECTS\AKR\FMSS\PHOTOS\ORIGINAL"
+
+    # Table - the name of the table to create for the photo records
+    table = "Photos_In_Filesystem"
+
+    # Database - the the name of the database in which to create the table
+    database = "akr_facility2"
+
+    # Server - the name of the server which has the database
+    server = "inpakrovmais"
 
 
 def get_connection_or_die(server, database):
@@ -52,35 +86,41 @@ def get_connection_or_die(server, database):
 
 
 def make_table(connection):
-    sql = (
-        "IF NOT (EXISTS (SELECT * "
-        "FROM INFORMATION_SCHEMA.TABLES "
-        "WHERE TABLE_NAME = 'Photos_In_Filesystem'))"
-        "BEGIN"
-        "  CREATE TABLE [Photos_In_Filesystem] "
-        "  (Folder nvarchar(max), Filename nvarchar(max), Lat float, Lon float, Bytes int, "
-        "  Gpsdate datetime2, Exifdate datetime2, Filedate datetime2)"
-        "END"
-    )
+    """Execute SQL in connection to create a new photos table if it does not exist."""
+    sql = """
+        IF NOT (EXISTS (SELECT *
+        FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_NAME = '{0}'))
+        BEGIN
+          CREATE TABLE {0}
+          (Folder nvarchar(max), Filename nvarchar(max), Lat float, Lon float, Bytes int,
+          Gpsdate datetime2, Exifdate datetime2, Filedate datetime2)
+        END
+    """
+    sql = sql.format(Config.table)
     return execute_sql(connection, sql)
 
 
 def clear_table(connection):
-    sql = "DELETE FROM [Photos_In_Filesystem] "
+    """Execute SQL in connection to clear the photos table."""
+    sql = "DELETE FROM {0}"
+    sql = sql.format(Config.table)
     return execute_sql(connection, sql)
 
 
 def execute_sql(connection, sql):
+    """Execute sql in the database connection."""
     wcursor = connection.cursor()
     wcursor.execute(sql)
     try:
         wcursor.commit()
-    except pyodbc.Error as de:
-        return "Database error:\n{0}\n{1}\n{1}".format(sql, connection, de)
+    except pyodbc.Error as ex:
+        return "Database error:\n{0}\n{1}\n{2}".format(sql, connection, ex)
     return None
 
 
 def write_photos(connection, photos):
+    """Execute SQL in connection to add the list of photos to the photos table."""
     wcursor = connection.cursor()
     if photos and len(photos[0]) == 2:
         for photo in photos:
@@ -90,19 +130,19 @@ def write_photos(connection, photos):
                 sql = sql.format(*photo)
             else:
                 # dictionary of values for each photo
-                sql = (
-                    "INSERT [Photos_In_Filesystem] "
-                    "(Folder, Filename, Lat, Lon, Bytes, Gpsdate, Exifdate, Filedate) values "
-                    "('{folder}','{file}', {lat}, {lon}, {bytes}, '{gpsdate}', '{exifdate}', '{filedate}')"
-                )
+                sql = """
+    INSERT [Photos_In_Filesystem]
+    (Folder, Filename, Lat, Lon, Bytes, Gpsdate, Exifdate, Filedate) values
+    ('{folder}','{file}', {lat}, {lon}, {bytes}, '{gpsdate}', '{exifdate}', '{filedate}')
+                """
                 sql = sql.format(**photo)
             # print(sql)
             wcursor.execute(sql)
     try:
         wcursor.commit()
-    except pyodbc.Error as de:
+    except pyodbc.Error as ex:
         msg = "Database error inserting into 'Photos_In_Filesystem'\n{0}\n{1}"
-        return msg.format(connection, de)
+        return msg.format(connection, ex)
     return None
 
 
@@ -110,7 +150,8 @@ def files_for_folders(root):
     """
     Get the files in the folders below root
     :param root: The full path of the folder to search
-    :return: A dictionary of the folders in root with a list of files for each folder.  All paths are relative to root.
+    :return: A dictionary of the folders in root with a list of files for each folder.
+    All paths are relative to root.
     """
     files = {}
     for folder in [f for f in os.listdir(root) if os.path.isdir(os.path.join(root, f))]:
@@ -138,22 +179,26 @@ def folder_file_tuples(root):
 
 
 def is_image(name):
+    """Return True if the file at name is a image file."""
     ext = os.path.splitext(name)[1].lower()
     return ext in [".jpg", ".jpeg", ".png", ".gif"]
 
 
 def is_jpeg(name):
+    """Return True if the file at name is a photo file."""
     ext = os.path.splitext(name)[1].lower()
     return ext in [".jpg", ".jpeg"]
 
 
-if __name__ == "__main__":
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Assumes script is in the Processing folder which is sub to the photos base folder.
-    base_dir = os.path.dirname(script_dir)
-    photo_dir = os.path.join(base_dir, "ORIGINAL")
-    conn = get_connection_or_die("inpakrovmais", "akr_facility2")
+def main():
+    """Read photos in file system and write them to the database."""
+    conn = get_connection_or_die(Config.server, Config.database)
     make_table(conn)
     clear_table(conn)
-    photo_list = [t for t in folder_file_tuples(photo_dir) if is_jpeg(t[1])]
+    folder = Config.photo_dir
+    photo_list = [t for t in folder_file_tuples(folder) if is_jpeg(t[1])]
     write_photos(conn, photo_list)
+
+
+if __name__ == "__main__":
+    main()
