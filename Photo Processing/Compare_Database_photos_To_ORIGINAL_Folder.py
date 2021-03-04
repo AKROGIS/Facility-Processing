@@ -55,6 +55,7 @@ def get_connection_or_die(server, database):
 
 
 def get_database_photos(connection):
+    """Return a list of photos paths in the database photos table."""
     try:
         rows = (
             connection.cursor()
@@ -68,8 +69,8 @@ def get_database_photos(connection):
             )
             .fetchall()
         )
-    except pyodbc.Error as de:
-        print("Database error ocurred", de)
+    except pyodbc.Error as ex:
+        print("Database error ocurred", ex)
         rows = None
     return rows
 
@@ -78,7 +79,8 @@ def files_for_folders(root):
     """
     Get the files in the folders below root
     :param root: The full path of the folder to search
-    :return: A dictionary of the folders in root with a list of files for each folder.  All paths are relative to root.
+    :return: A dictionary of the folders in root with a list of files for each folder.
+    All paths are relative to root.
     """
     files = {}
     for folder in [f for f in os.listdir(root) if os.path.isdir(os.path.join(root, f))]:
@@ -105,11 +107,12 @@ def folder_file_tuples(root):
     return pairs
 
 
-def photos_below(dir):
-    dir = dir + "\\"
+def photos_below(folder):
+    """Return a list of relative paths to photos below folder."""
+    folder += os.pathsep
     results = []
-    for root, dirs, files in os.walk(dir):
-        relative_path = root.replace(dir, "")
+    for root, _, files in os.walk(folder):
+        relative_path = root.replace(folder, "")
         print(relative_path, end=" ")
         for filename in files:
             if is_image(filename):
@@ -118,7 +121,7 @@ def photos_below(dir):
 
 
 def files_in_csv(csv_path):
-
+    """Return a list of relative paths to photos in the file at csv_path."""
     files = set()
     with csv23.open(csv_path, "r") as csv_file:
         csv_reader = csv.reader(csv_file)
@@ -137,38 +140,39 @@ def files_in_csv(csv_path):
 
 
 def is_image(name):
+    """Return True if the file at name is a image file."""
     ext = os.path.splitext(name)[1].lower()
     return ext in [".jpg", ".jpeg", ".png", ".gif"]
 
 
 def is_jpeg(name):
+    """Return True if the file at name is a photo file."""
     ext = os.path.splitext(name)[1].lower()
     return ext in [".jpg", ".jpeg"]
 
 
-if __name__ == "__main__":
+def compare(conn, csv_path, photo_dir):
+    """Read the database plus CSV file and compare with filesystem."""
+
+    # pylint: disable=consider-using-set-comprehension
+    # set comprehensions are not available in Python2
+
     print("Reading database")
-    conn = get_connection_or_die("inpakrovmais", "akr_facility2")
     # duplicate paths in the database are OK;
     #  two different features could be in the same photo
     # so we want to unique-ify the list of photo links
     db_photo_set = set([row[0].lower() for row in get_database_photos(conn)])
     print("Found {0} unique files in the Database.".format(len(db_photo_set)))
 
-    csv_file = "PhotoCSVLoader.csv"
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Assumes script ia adjacent to the CSV list of new photos
-    csv_path = os.path.join(script_dir, csv_file)
     print("\nReading {0}".format(csv_path))
     csv_photo_set = files_in_csv(csv_path)
+    csv_file = os.path.basename(csv_path)
     print("Found {0} unique files in the {1}.".format(len(csv_photo_set), csv_file))
 
+    print("\nReading Folders in " + photo_dir)
     # Assumes script is in the Processing folder which is in the photos base folder.
     #   some/path/PHOTOS/PROCESSING/this_script.py
     #   some/path/PHOTOS/ORIGINAL/{park}/photos_files.jpg
-    base_dir = os.path.dirname(script_dir)
-    photo_dir = os.path.join(base_dir, "ORIGINAL")
-    print("\nReading Folders in " + photo_dir)
     # photo_tuples = [t for t in folder_file_tuples(photo_dir) if is_jpeg(t[1])]
     # fs_photo_set = set([(t[0]+'/'+t[1]).lower() for t in photo_tuples])
     fs_photo_set = set([p.lower().replace("\\", "/") for p in photos_below(photo_dir)])
@@ -204,3 +208,19 @@ if __name__ == "__main__":
             print("  {0}".format(i))
     if not fs_not_db and not db_not_fs and not csv_not_fs:
         print("Woot, Woot, No issues found.")
+
+
+def main():
+    """Get the paths and connections and then compare."""
+    conn = get_connection_or_die("inpakrovmais", "akr_facility2")
+    csv_file = "PhotoCSVLoader.csv"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Assumes script ia adjacent to the CSV list of new photos
+    csv_path = os.path.join(script_dir, csv_file)
+    base_dir = os.path.dirname(script_dir)
+    photo_dir = os.path.join(base_dir, "ORIGINAL")
+    compare(conn, csv_path, photo_dir)
+
+
+if __name__ == "__main__":
+    main()
