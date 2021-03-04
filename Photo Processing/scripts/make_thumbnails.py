@@ -80,15 +80,15 @@ def make_thumbs(base, size):
     if not os.path.exists(thumbdir):
         os.mkdir(thumbdir)
 
-    for park in get_folders(origdir):
-        print(park, end="")
-        orig_park_path = os.path.join(origdir, park)
-        new_park_path = os.path.join(thumbdir, park)
-        if not os.path.exists(new_park_path):
-            os.mkdir(new_park_path)
-        for photo in get_photos(orig_park_path):
-            src = os.path.join(orig_park_path, photo)
-            dest = os.path.join(new_park_path, photo)
+    for folder in get_folders(origdir):
+        print(folder, end="")
+        orig_path = os.path.join(origdir, folder)
+        new_path = os.path.join(thumbdir, folder)
+        if not os.path.exists(new_path):
+            os.mkdir(new_path)
+        for photo in get_photos(orig_path):
+            src = os.path.join(orig_path, photo)
+            dest = os.path.join(new_path, photo)
             if os.path.exists(src) and (
                 not os.path.exists(dest)
                 or os.path.getmtime(dest) < os.path.getmtime(dest)
