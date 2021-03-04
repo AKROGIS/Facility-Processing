@@ -21,9 +21,7 @@ import os
 import sys
 
 import pyodbc
-from PIL import Image, ImageDraw, ImageFont
-
-import apply_orientation  # dependency on PIL
+from PIL import Image, ImageDraw, ImageFont, ExifTags
 
 
 def get_connection_or_die(server, database):
@@ -218,6 +216,32 @@ def get_photo_data(conn, park, photo):
     return park, "unknown", 0, 0, None, ""
 
 
+def apply_orientation(image):
+    """Returns a correctly rotated image per the EXIF data."""
+
+    # pylint: disable=protected-access
+    # consider using exifread instead https://pypi.org/project/ExifRead/
+
+    orientation = None
+    try:
+        for orientation in ExifTags.TAGS:
+            if ExifTags.TAGS[orientation] == "Orientation":
+                break
+
+        exif = image._getexif()
+
+        if exif[orientation] == 3:
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image = image.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError):
+        # image doesn't have orientation exif
+        pass
+    return image
+
+
 def make_webphotos(base, config, conn):
     origdir = os.path.join(base, "ORIGINAL")
     webdir = os.path.join(base, "WEB")
@@ -245,7 +269,7 @@ def make_webphotos(base, config, conn):
                 try:
                     data = get_photo_data(conn, park, photo)
                     im = Image.open(src)
-                    im = apply_orientation.apply_orientation(im)
+                    im = apply_orientation(im)
                     im.thumbnail(config["size"], Image.ANTIALIAS)
                     annotate(im, data, config)
                     im.save(dest)

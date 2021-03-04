@@ -8,7 +8,6 @@ Master copies of these documents and scripts are at:
 
 The documented scripts require the following support files in this folder
 
-* `apply_orientation.py`
 * `ARLRDBD.TTF`
 
 ## Contents

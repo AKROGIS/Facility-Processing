@@ -15,9 +15,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 
-from PIL import Image
-
-import apply_orientation  # dependency on PIL
+from PIL import Image, ExifTags
 
 
 def is_jpeg(path):
@@ -43,6 +41,32 @@ def folders(start_dir):
 
 def photos(parkdir):
     return [f for f in os.listdir(parkdir) if is_jpeg(os.path.join(parkdir, f))]
+
+
+def apply_orientation(image):
+    """Returns a correctly rotated image per the EXIF data."""
+
+    # pylint: disable=protected-access
+    # consider using exifread instead https://pypi.org/project/ExifRead/
+
+    orientation = None
+    try:
+        for orientation in ExifTags.TAGS:
+            if ExifTags.TAGS[orientation] == "Orientation":
+                break
+
+        exif = image._getexif()
+
+        if exif[orientation] == 3:
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image = image.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError):
+        # image doesn't have orientation exif
+        pass
+    return image
 
 
 def make_thumbs(base, size):
@@ -71,9 +95,9 @@ def make_thumbs(base, size):
             ):
                 try:
                     im = Image.open(src)
-                    im = apply_orientation.apply_orientation(im)
                     im.thumbnail(size, Image.ANTIALIAS)
                     im.save(dest)
+                    im = apply_orientation(im)
                     print(".", end="")
                 except IOError:
                     print("Cannot create thumbnail for", src)
