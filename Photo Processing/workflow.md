@@ -11,7 +11,7 @@ still work.
 *This process is **NOT** for geo-tagged photos (such as from a mobile device).
 Those photos will go into the `akr_facility2.AKR_ATTACH_PT` feature class
 using a TBD process.*
-          
+
 ## Photo Providers
 
 * This process is for photos that will be linked to a geographic feature in the
@@ -53,21 +53,21 @@ using a TBD process.*
    SDE.
 7. Run the [Enterprise-QC](https://github.com/AKROGIS/Enterprise-QC) checks
    on the new version (see the view `QC_ISSUES_AKR_ATTACH`).  Correct any
-   issues and post the version to `DEFAULT` and then delete the new version.   
+   issues and post the version to `DEFAULT` and then delete the new version.
 8. Move the csv to `.\PROCESSING\Done Processing`, and append a date stamp
    (YYYY-MM-DD) to the filename.
 9. Copy `.\PROCESSING\TemplatePhotoCSVLoader - Empty.csv` to
    `.\PROCESSING\PhotoCSVLoader.csv`.
-9. Run `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py` to verify
-   that the database matches the file system.
-9. Run `.\PROCESSING\scripts\make_webphotos.py` to create web sized photos
-   in `.\WEB` from the new photos in `.\ORIGINALS`.
-9. Run `.\PROCESSING\scripts\make_thumbnails.py` to create thumbnail photos
-   in `.\THUMB` from the new photos in `.\ORIGINALS`.
-9. Run `.\PROCESSING\scripts\make_photos_json.py` to create an updated json
-   list of photos.
-9. Run `.\PROCESSING\scripts\make_buildings_csv.py` to create an updated json
-   list of buildings.
-9. Run `.\PROCESSING\scripts\update_photos_on_server.bat` to copy the new CSV
-   files and the photos in `.\WEB` and `.\THUMB` to the server
-   (`\\akrgis.nps.gov\inetapps\fmss\photos`).
+10. Run `.\PROCESSING\Compare_Database_photos_To_ORIGINAL_Folder.py` to verify
+    that the database matches the file system.
+11. Run `.\PROCESSING\scripts\make_webphotos.py` to create web sized photos
+    in `.\WEB` from the new photos in `.\ORIGINALS`.
+12. Run `.\PROCESSING\scripts\make_thumbnails.py` to create thumbnail photos
+    in `.\THUMB` from the new photos in `.\ORIGINALS`.
+13. Run `.\PROCESSING\scripts\make_photos_json.py` to create an updated json
+    list of photos.
+14. Run `.\PROCESSING\scripts\make_buildings_csv.py` to create an updated json
+    list of buildings.
+15. Run `.\PROCESSING\scripts\update_photos_on_server.bat` to copy the new CSV
+    files and the photos in `.\WEB` and `.\THUMB` to the server
+    (`\\akrgis.nps.gov\inetapps\fmss\photos`).

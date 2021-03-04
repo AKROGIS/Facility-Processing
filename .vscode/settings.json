@@ -41,6 +41,7 @@
         "pylint",
         "pyodbc",
         "regan",
+        "robocopy",
         "sarwas",
         "uniquify",
         "wcursor",

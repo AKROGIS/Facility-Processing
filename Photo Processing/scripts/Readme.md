@@ -4,11 +4,12 @@ This folder contains scripts for updating photo changes on our FMSS website.
 
 This folder was created by and is maintained by Regan Sarwas.
 Master copies of these documents and scripts are at:
-https://github.com/AKROGIS/Facility-Processing/blob/master/Photo%20Processing/scripts
+<https://github.com/AKROGIS/Facility-Processing/blob/master/Photo%20Processing/scripts>
 
 The documented scripts require the following support files in this folder
-  * `apply_orientation.py`
-  * `ARLRDBD.TTF`
+
+* `apply_orientation.py`
+* `ARLRDBD.TTF`
 
 ## Contents
 
@@ -20,7 +21,7 @@ the structure of the input CSV, the database schema, and other naming
 conventions in the destination database.  This script requires the `pyodbc`
 Python module (use `pip` to install it, see script for details).  This script
 will fail unless you have edit permissions in the facilities database.
- 
+
 ### `make_photos_json.py`
 
 This will create a json file that lists each photo by it photo foreign key
@@ -54,8 +55,8 @@ minutes.
 ### `update_photos_on_server.bat`
 
 This is a robocopy script that will update the web server with the files in
-`WEB` and `THUMB` it also copies `photos.json` to 
-`\\akrgis.nps.gov\inetApps\fmss\photos.json` and `buildings.csv` to 
+`WEB` and `THUMB` it also copies `photos.json` to
+`\\akrgis.nps.gov\inetApps\fmss\photos.json` and `buildings.csv` to
 `\\akrgis.nps.gov\inetApps\buildings\data\buildings.csv`.
 The user will need write access to the web server (`akrgis.nps.gov`).
 

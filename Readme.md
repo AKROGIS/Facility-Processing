@@ -71,7 +71,6 @@ documents in the folder for more details.
 This folder is also deployed to the GIS Team drive with the facility related
 photos.
 
-
 ## Build
 
 There is nothing to build to use these tools.
@@ -86,12 +85,12 @@ to a local file system.
 ### Python
 
 Before executing a python script, open it in a text editor and check any
-path or file names in the script that should be edited to reflect the 
+path or file names in the script that should be edited to reflect the
 file system where the script and data are deployed.  The script can then
 be run in a CMD/Powershell window, with the
 [IDLE](https://en.wikipedia.org/wiki/IDLE) application,
 with the
-[Python extension to VS Code](https://code.visualstudio.com/docs/languages/python), 
+[Python extension to VS Code](https://code.visualstudio.com/docs/languages/python),
 or any other Python execution environment.
 
 ### SQL Scripts

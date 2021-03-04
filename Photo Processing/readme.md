@@ -12,7 +12,7 @@ The photo providers and the PDS Data Manager should reference the
 [workflow](workflow.md) document for instructions on processing new photos.
 
 Master copies of the documents and scripts in this folder are at:
-https://github.com/AKROGIS/Facility-Processing/tree/master/Photo%20Processing
+<https://github.com/AKROGIS/Facility-Processing/tree/master/Photo%20Processing>
 
 ## Photo List (`PhotoCSVLoader.csv`)
 
