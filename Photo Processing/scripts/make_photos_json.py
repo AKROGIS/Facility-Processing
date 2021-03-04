@@ -54,25 +54,31 @@ def get_connection_or_die(server, database):
 
 
 def get_photo_data(connection):
+    """Get a association list (id, url) of photos from connection."""
     photos = {}
     try:
         # FIXME - This only returns one ID for each photo
-        #   some photos have multiple IDs (some buildings and building assets have FMSS ID(s) and a FEATUREID)
+        #   some photos have multiple IDs (some buildings and building assets
+        #   have FMSS ID(s) and a FEATUREID)
         rows = (
             connection.cursor()
             .execute(
                 """
-             SELECT COALESCE(FACLOCID, COALESCE(FEATUREID, COALESCE(FACASSETID, GEOMETRYID))) AS id,
+             SELECT COALESCE(FACLOCID,
+                             COALESCE(FEATUREID,
+                                      COALESCE(FACASSETID, GEOMETRYID))) AS id,
 			        REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '') AS photo
                FROM gis.AKR_ATTACH_evw
-              WHERE ATCHALTNAME IS NOT NULL AND (FACLOCID IS NOT NULL OR FACASSETID IS NOT NULL OR FEATUREID IS NOT NULL OR GEOMETRYID IS NOT NULL)
+              WHERE ATCHALTNAME IS NOT NULL AND (FACLOCID IS NOT NULL
+                 OR FACASSETID IS NOT NULL OR FEATUREID IS NOT NULL
+                 OR GEOMETRYID IS NOT NULL)
            ORDER BY id, ATCHDATE DESC
                 """
             )
             .fetchall()
         )
-    except pyodbc.Error as de:
-        print("Database error ocurred", de)
+    except pyodbc.Error as ex:
+        print("Database error ocurred", ex)
         rows = None
     if rows:
         for row in rows:
@@ -83,10 +89,15 @@ def get_photo_data(connection):
     return photos
 
 
-if __name__ == "__main__":
+def main():
+    """Get data from the database and save as a JSON file."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     outfile = os.path.join(script_dir, "photos.json")
     conn = get_connection_or_die("inpakrovmais", "akr_facility2")
     data = get_photo_data(conn)
-    with open(outfile, "w", encoding="utf-8") as fh:
-        fh.write(json.dumps(data, indent=2, separators=(",", ": ")))
+    with open(outfile, "w", encoding="utf-8") as out_file:
+        out_file.write(json.dumps(data, indent=2, separators=(",", ": ")))
+
+
+if __name__ == "__main__":
+    main()

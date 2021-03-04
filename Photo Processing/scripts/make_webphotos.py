@@ -56,10 +56,13 @@ def get_connection_or_die(server, database):
     sys.exit()
 
 
-def shadow(ul, wh, offset, fontsize):
-    newul = (ul[0] - offset, ul[1] - offset + fontsize * 0.15)
-    newlr = (ul[0] + wh[0] + offset, ul[1] + fontsize + offset)
-    return [newul, newlr]
+def shadow(origin, size, offset, fontsize):
+    """Return the bounding box for a text shadow."""
+    left, upper = origin
+    width, _ = size
+    upper_left = (left - offset, upper - offset + fontsize * 0.15)
+    lower_right = (left + width + offset, upper + fontsize + offset)
+    return [upper_left, lower_right]
 
 
 def datestr(date):
@@ -92,6 +95,10 @@ def latlonstr(lat, lon):
 
 
 def annotate(image, data, config):
+    """Add annotations to the image using the data formatted per config."""
+
+    # pylint: disable=too-many-locals
+
     unit, tag, lat, lon, date, desc = data
     font = config["font"]
     fontsize = config["fontsize"]
@@ -141,36 +148,40 @@ def annotate(image, data, config):
 
 
 def is_jpeg(path):
+    """Return True if the file at path is a JPEG photo file."""
     if not os.path.isfile(path):
         return False
     ext = os.path.splitext(path)[1].lower()
     return ext in [".jpg", ".jpeg"]
 
 
-def parks(parent):
-    return [f for f in os.listdir(parent) if os.path.isdir(os.path.join(parent, f))]
-
-
-def folders(start_dir):
+def get_folders(start_dir):
+    """Find all the folders below start_dir."""
     start_dir = start_dir + "\\"
     results = []
-    for root, dirs, _ in os.walk(start_dir):
+    for root, folders, _ in os.walk(start_dir):
         relative_path = root.replace(start_dir, "")
-        for d in dirs:
-            results.append(os.path.join(relative_path, d))
+        for folder in folders:
+            results.append(os.path.join(relative_path, folder))
     return results
 
 
-def photos(parkdir):
+def get_photos(parkdir):
+    """Return a list of all the photo files in folder."""
     return [f for f in os.listdir(parkdir) if is_jpeg(os.path.join(parkdir, f))]
 
 
 def get_photo_data(conn, park, photo):
-    # Park is the relative path to a folder containing photo
-    # Do not assume that park is only the UNITCODE (this was an old convention and we now have subfolders)
+    """Get data for photo in park from the database at conn.
+
+    park is the relative path to a folder containing photo
+    Do not assume that park is only the UNITCODE (this was an old
+    convention and we now have subfolders)
+    """
     search_term = "%/web/" + park.replace("\\", "/") + "/" + photo
     try:
-        # FIXME - This query is really slow. I suspect the ORs in the JOIN clause, and unioning many feature classes
+        # FIXME - This query is really slow. I suspect the ORs in the JOIN clause,
+        # and unioning many feature classes
         row = (
             conn.cursor()
             .execute(
@@ -179,25 +190,45 @@ def get_photo_data(conn, park, photo):
                    ,COALESCE(a.Location +'/'+ a.Asset, COALESCE(f.Location, 'No FMSS ID')) AS tag
 			       ,fc.lat,  fc.lon
                    ,LEFT(p.ATCHDATE,19) AS [date]
-				   ,COALESCE(fc.MAPLABEL, COALESCE(fc.[Name], COALESCE(a.[description], COALESCE(f.[description], 'no name')))) AS [desc]
+				   ,COALESCE(fc.MAPLABEL,
+                             COALESCE(fc.[Name],
+                                      COALESCE(a.[description],
+                                               COALESCE(f.[description], 'no name')))) AS [desc]
                FROM gis.AKR_ATTACH_evw as p
-          LEFT JOIN (SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, BLDGNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.AKR_BLDG_CENTER_PT_evw
+          LEFT JOIN (SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID,
+                            MAPLABEL, BLDGNAME AS NAME, Shape.STY as lat,
+                            Shape.STX as lon from gis.AKR_BLDG_CENTER_PT_evw
 		             union all
 		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL,
-                            CASE WHEN TRLFEATTYPE = 'Other' THEN TRLFEATTYPEOTHER ELSE TRLFEATTYPE END +
-                            CASE WHEN TRLFEATSUBTYPE is NULL THEN '' ELSE ', ' + TRLFEATSUBTYPE END AS [Name],
+                            CASE WHEN TRLFEATTYPE = 'Other'
+                                 THEN TRLFEATTYPEOTHER
+                                 ELSE TRLFEATTYPE
+                            END +
+                            CASE WHEN TRLFEATSUBTYPE is NULL
+                                 THEN ''
+                                 ELSE ', ' + TRLFEATSUBTYPE
+                            END AS [Name],
                             Shape.STY as lat, Shape.STX as lon from gis.TRAILS_FEATURE_PT_evw
 		             union all
-		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, TRLNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.TRAILS_LN_evw
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID,
+                            MAPLABEL, TRLNAME AS NAME, Shape.STStartPoint().STY as lat,
+                            Shape.STStartPoint().STX as lon from gis.TRAILS_LN_evw
 		             union all
-		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, RDNAME AS NAME, Shape.STStartPoint().STY as lat, Shape.STStartPoint().STX as lon from gis.ROADS_LN_evw
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID,
+                            MAPLABEL, RDNAME AS NAME, Shape.STStartPoint().STY as lat,
+                            Shape.STStartPoint().STX as lon from gis.ROADS_LN_evw
 		             union all
-		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat, Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
+		             SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID,
+                            MAPLABEL, LOTNAME AS NAME, Shape.STCentroid().STY as lat,
+                            Shape.STCentroid().STX as lon from gis.PARKLOTS_PY_evw
 		             union all
-                     SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID, MAPLABEL, ASSETNAME AS NAME, Shape.STY as lat, Shape.STX as lon from gis.AKR_ASSET_PT_evw
+                     SELECT UNITCODE, FACLOCID, FACASSETID, FEATUREID, GEOMETRYID,
+                            MAPLABEL, ASSETNAME AS NAME, Shape.STY as lat,
+                            Shape.STX as lon from gis.AKR_ASSET_PT_evw
 					 )
 				 AS fc
-                 ON fc.FACLOCID = p.FACLOCID OR fc.FACASSETID = p.FACASSETID OR fc.FEATUREID = p.FEATUREID OR fc.GEOMETRYID = p.GEOMETRYID
+                 ON fc.FACLOCID = p.FACLOCID OR fc.FACASSETID = p.FACASSETID
+                 OR fc.FEATUREID = p.FEATUREID OR fc.GEOMETRYID = p.GEOMETRYID
           LEFT JOIN dbo.FMSSEXPORT as f
                  ON f.Location = fc.FACLOCID
           LEFT JOIN dbo.FMSSExport_Asset as a
@@ -208,8 +239,8 @@ def get_photo_data(conn, park, photo):
             )
             .fetchone()
         )
-    except pyodbc.Error as de:
-        print("Database error ocurred", de)
+    except pyodbc.Error as ex:
+        print("Database error ocurred", ex)
         row = None
     if row:
         return row.unit, row.tag, row.lat, row.lon, row.date, row.desc
@@ -243,6 +274,7 @@ def apply_orientation(image):
 
 
 def make_webphotos(base, config, conn):
+    """Make web sized photos below base with data from conn."""
     origdir = os.path.join(base, "ORIGINAL")
     webdir = os.path.join(base, "WEB")
 
@@ -253,13 +285,13 @@ def make_webphotos(base, config, conn):
     if not os.path.exists(webdir):
         os.mkdir(webdir)
 
-    for park in folders(origdir):
+    for park in get_folders(origdir):
         print(park, end="")
         orig_park_path = os.path.join(origdir, park)
         new_park_path = os.path.join(webdir, park)
         if not os.path.exists(new_park_path):
             os.mkdir(new_park_path)
-        for photo in photos(orig_park_path):
+        for photo in get_photos(orig_park_path):
             src = os.path.join(orig_park_path, photo)
             dest = os.path.join(new_park_path, photo)
             if os.path.exists(src) and (
@@ -268,19 +300,21 @@ def make_webphotos(base, config, conn):
             ):
                 try:
                     data = get_photo_data(conn, park, photo)
-                    im = Image.open(src)
-                    im = apply_orientation(im)
-                    im.thumbnail(config["size"], Image.ANTIALIAS)
-                    annotate(im, data, config)
-                    im.save(dest)
+                    image = Image.open(src)
+                    image = apply_orientation(image)
+                    image.thumbnail(config["size"], Image.ANTIALIAS)
+                    annotate(image, data, config)
+                    image.save(dest)
                     print(".", end="")
                 except IOError:
                     print("Cannot create thumbnail for", src)
 
 
-if __name__ == "__main__":
+def main():
+    """Make web sized photos with Config parameters."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Assumes script is in a sub folder of the Processing folder which is sub to the photos base folder.
+    # Assumes script is in a sub folder of the Processing folder
+    # which is sub to the photos base folder.
     base_dir = os.path.dirname(os.path.dirname(script_dir))
     # base_dir = r'C:\tmp\facility_photos\test'
     options = {
@@ -293,3 +327,7 @@ if __name__ == "__main__":
     }
     conn = get_connection_or_die("inpakrovmais", "akr_facility2")
     make_webphotos(base_dir, options, conn)
+
+
+if __name__ == "__main__":
+    main()
