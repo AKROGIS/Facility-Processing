@@ -20,7 +20,7 @@ class Config(object):
 
     # pylint: disable=useless-object-inheritance,too-few-public-methods
 
-    # If False, the script will get the two objects to compare from the command line.
+    # The path to the CSV file with photo paths to check.
     csv_path = r"T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\PhotoCSVLoader.csv"
 
     # Path root - the absolute path prexix for the data in the CSV
