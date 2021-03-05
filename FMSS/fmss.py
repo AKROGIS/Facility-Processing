@@ -26,6 +26,9 @@ except ImportError:
 
 import csv23
 
+# pylint: disable=invalid-name,missing-function-docstring
+
+
 # These URLs return JSON
 location_url = "http://inpniscvnpunit2/fmss/api/locations?siteid={0}&page={1}"
 asset_url = "http://inpniscvnpunit2/fmss/api/assets?siteid={0}&page={1}"
@@ -156,8 +159,7 @@ assetCodes = {
 def my_str(s):
     if s:
         return "{0}".format(s)
-    else:
-        return ""
+    return ""
 
 
 def locations(park):
@@ -301,9 +303,9 @@ def assets_page(park, page):
     return done, data
 
 
-def asset_data(page, park):
+def asset_data(pages, park):
     data = []
-    for page in page:
+    for page in pages:
         try:
             parent_org = page["LOCHIERARCHY"]["ORGID"]
         except KeyError:

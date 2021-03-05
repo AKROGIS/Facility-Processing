@@ -30,6 +30,8 @@ import pyodbc
 
 import csv23
 
+# pylint: disable=invalid-name,missing-function-docstring
+
 # Python 2/3 compatible xrange() cabability
 # pylint: disable=undefined-variable,redefined-builtin
 if sys.version_info[0] < 3:
@@ -69,13 +71,6 @@ def location_query(site_id, asset_code):
     request = urllib2.Request(url=endpoint, headers=headers, data=encoded_query)
     response = urllib2.urlopen(request).read()
     return response
-
-
-"""
-          <int:Header>
-            <int:SenderID>SJBTEST</int:SenderID>
-          </int:Header>
-"""
 
 
 def frpp_query(location_id):
@@ -449,6 +444,9 @@ def copy_column(connection, column_name, from_table, to_table):
 
 
 def update_db():
+
+    # pylint: disable=broad-except
+
     conn = get_connection_or_die("inpakrovmais", "akr_facility2")
     try:
         create_table(conn, "FMSSExport_New")
@@ -461,13 +459,13 @@ def update_db():
     except Exception as ex:
         print(ex)
     finally:
-        # Make sure to remove the 'FMSSExport_New' if it exists (problem), so we can try again next time.
+        # Make sure to remove the 'FMSSExport_New' if it exists (problem),
+        # so we can try again next time.
         try:
             delete_table(conn, "FMSSExport_New")
             print("Deleted table FMSSExport_New")
         except pyodbc.Error as ex:
             print(ex)
-            pass
 
 
 print(test_service2())

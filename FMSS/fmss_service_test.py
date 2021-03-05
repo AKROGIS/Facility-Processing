@@ -17,6 +17,7 @@ except ImportError:
     # Python 3 replacement
     import urllib.request as urllib2
 
+# pylint: disable=invalid-name
 
 endpoint1 = "https://mif.pfmd.nps.gov/meaweb/services/FMSSGISLOCQ"
 query1 = """

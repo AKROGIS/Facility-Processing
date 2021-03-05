@@ -54,6 +54,7 @@ def get_connection_or_die(server, database):
 
 
 def get_building_data(connection):
+    """Get the building attributes from the database connection."""
     try:
         rows = (
             connection.cursor()
@@ -76,8 +77,8 @@ def get_building_data(connection):
             )
             .fetchall()
         )
-    except pyodbc.Error as de:
-        print("Database error ocurred", de)
+    except pyodbc.Error as ex:
+        print("Database error ocurred", ex)
         rows = None
     return rows
 
@@ -117,6 +118,7 @@ def cvs23_write(writer, row):
 
 
 def write_building_csv(csv_path, rows):
+    """Create a CSV with the building location and attributes for web display."""
     header = [
         "Latitude",
         "Longitude",
