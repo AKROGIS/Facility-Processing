@@ -30,7 +30,7 @@ class Config(object):
     # optional if you choose to provide a absolute path for both paths.
     root_folder = r"T:\PROJECTS\AKR\FMSS\PHOTOS"
 
-    # Photo folder - the absolute path prexix for location of photo folders
+    # Photo folder - the absolute path prefix for location of photo folders
     # and photo files.  Photos can be in the photo_folder or in sub folders
     # to any depth.
     photo_folder = os.path.join(root_folder, "ORIGINAL")

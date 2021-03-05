@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Create a photos.json file which lists each photo in the database with a URL and foreign key.
+Create a JSON file with a list of relative photo URLS for each feature ID in a database.
 
-File paths are hard coded in the script relative to the scipt's location.
-The database connection string and schema are also hardcoded in the script.
+Review/Edit the Config parameters before executing.
 
 Written for Python 2.7; may work with Python 3.x.
 
@@ -15,10 +14,42 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from io import open
 import json
-import os.path
 import sys
 
 import pyodbc
+
+
+class Config(object):
+    """Namespace for configuration parameters. Edit as needed."""
+
+    # pylint: disable=useless-object-inheritance,too-few-public-methods
+
+    # JSON path - the path to the JSON file to create.
+    # This should be the same as the path in `update_photos_on_server.bat`
+    json_path = r"T:\PROJECTS\AKR\FMSS\PHOTOS\PROCESSING\scripts\photos.json"
+
+    # Photo query - A database query to produce a (id, URL) record for
+    # each photo.
+    # FIXME - This query only returns one ID for each photo
+    #   some photos have multiple IDs (some buildings and building assets
+    #   have FMSS ID(s) and a FEATUREID)
+    photo_query = """
+        SELECT COALESCE(FACLOCID,
+                        COALESCE(FEATUREID,
+                                 COALESCE(FACASSETID, GEOMETRYID))) AS id,
+               REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '') AS photo
+          FROM gis.AKR_ATTACH_evw
+         WHERE ATCHALTNAME IS NOT NULL AND (FACLOCID IS NOT NULL
+            OR FACASSETID IS NOT NULL OR FEATUREID IS NOT NULL
+            OR GEOMETRYID IS NOT NULL)
+      ORDER BY id, ATCHDATE DESC
+    """
+
+    # Database - the the name of the database in which to run the query
+    database = "akr_facility2"
+
+    # Server - the name of the server which has the database
+    server = "inpakrovmais"
 
 
 def get_connection_or_die(server, database):
@@ -57,26 +88,7 @@ def get_photo_data(connection):
     """Get a association list (id, url) of photos from connection."""
     photos = {}
     try:
-        # FIXME - This only returns one ID for each photo
-        #   some photos have multiple IDs (some buildings and building assets
-        #   have FMSS ID(s) and a FEATUREID)
-        rows = (
-            connection.cursor()
-            .execute(
-                """
-             SELECT COALESCE(FACLOCID,
-                             COALESCE(FEATUREID,
-                                      COALESCE(FACASSETID, GEOMETRYID))) AS id,
-			        REPLACE(ATCHLINK, 'https://akrgis.nps.gov/fmss/photos/web/', '') AS photo
-               FROM gis.AKR_ATTACH_evw
-              WHERE ATCHALTNAME IS NOT NULL AND (FACLOCID IS NOT NULL
-                 OR FACASSETID IS NOT NULL OR FEATUREID IS NOT NULL
-                 OR GEOMETRYID IS NOT NULL)
-           ORDER BY id, ATCHDATE DESC
-                """
-            )
-            .fetchall()
-        )
+        rows = connection.cursor().execute(Config.photo_query).fetchall()
     except pyodbc.Error as ex:
         print("Database error ocurred", ex)
         rows = None
@@ -91,11 +103,9 @@ def get_photo_data(connection):
 
 def main():
     """Get data from the database and save as a JSON file."""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    outfile = os.path.join(script_dir, "photos.json")
-    conn = get_connection_or_die("inpakrovmais", "akr_facility2")
+    conn = get_connection_or_die(Config.server, Config.database)
     data = get_photo_data(conn)
-    with open(outfile, "w", encoding="utf-8") as out_file:
+    with open(Config.json_path, "w", encoding="utf-8") as out_file:
         out_file.write(json.dumps(data, indent=2, separators=(",", ": ")))
 
 
