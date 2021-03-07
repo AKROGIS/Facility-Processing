@@ -19,6 +19,11 @@ filedate - the file systems last modified date for the photo file
 
 Written for Python 2.7; may work with Python 3.x.
 
+A version of this script without the specific requirements of the
+FMSS photo processing is at
+https://github.com/AKROGIS/Misc_Scripts/blob/master/attributes_of_photo_files.py
+
+
 Third party requirements:
 * exifread - https://pypi.python.org/pypi/ExifRead
 """
